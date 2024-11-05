@@ -13,7 +13,8 @@ import StudentProtectedRoute from "./route-guards/StudentProtectedRoute";
 import StudentDashboard from "./pages/dashboard-student/StudentDashboard";
 
 // m1 page imports
-
+import Lesson1 from "./courses/html/lesson-1/Lesson1";
+import Lesson2 from "./courses/html/lesson-2/Lesson2";
 // m2 page imports
 
 // m3 page imports
@@ -42,6 +43,9 @@ function App() {
             <Route path="/student/dashboard/" element={<MarkupAdmin />} />
           </Route>
         </Route>
+
+        <Route path="/lesson1" element={<Lesson1 />} />
+        <Route path="/lesson2" element={<Lesson2 />} />
       </Routes>
     </div>
   );

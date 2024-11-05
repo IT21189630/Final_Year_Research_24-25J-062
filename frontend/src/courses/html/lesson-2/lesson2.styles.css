@@ -1,0 +1,54 @@
+.tablet-screen {
+  width: 500px;
+  height: 650px;
+  background-size: contain;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 60px 50px;
+  font-family: cursive;
+}
+
+.target-output-img {
+  width: 200px;
+  display: block;
+  margin: 0 auto;
+}
+
+.headtp-1 {
+  font-size: 2em;
+  margin: 5px;
+}
+.headtp-2 {
+  font-size: 1.8em;
+  margin: 5px;
+}
+.headtp-3 {
+  font-size: 1.5em;
+  margin: 5px;
+}
+.headtp-4 {
+  font-size: 1.3em;
+  margin: 5px;
+}
+.headtp-5 {
+  font-size: 1.1em;
+  margin: 5px;
+}
+.headtp-6 {
+  font-size: 0.9em;
+  margin: 5px;
+}
+
+.msg-type-badge {
+  margin: 10px 5px;
+}
+
+.msg-type-divider {
+  width: 100%;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.3);
+  margin-bottom: 30px;
+}
