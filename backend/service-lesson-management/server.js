@@ -31,6 +31,11 @@ app.use(
   require("./routes/lesson.routes")
 );
 
+app.use(
+  "/gamified-learning/api/lesson-management",
+  require("./routes/course.routes")
+);
+
 app.use(verifyJWT);
 app.use(errorHandler);
 

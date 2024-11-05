@@ -6,6 +6,10 @@ const courseSchema = mongoose.Schema(
       type: String,
       required: [true, "Course name is required!"],
     },
+    image: {
+      type: String,
+      required: [true, "Course image is required!"],
+    },
     price: {
       type: Number,
       required: [true, "Course price is required!"],
@@ -16,8 +20,8 @@ const courseSchema = mongoose.Schema(
       required: [true, "Course description is required!"],
     },
     prerequisites: {
-      type: [String],
-      default: [],
+      type: String,
+      default: "none",
     },
     lessons: [
       {
