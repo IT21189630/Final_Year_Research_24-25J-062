@@ -1,0 +1,49 @@
+.log-book-page {
+  width: 490px;
+  height: 670px;
+  background-size: contain;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 30px 20px;
+  font-family: cursive;
+}
+
+.target-output-img {
+  width: 200px;
+  display: block;
+  margin: 0 auto;
+}
+
+.log-page-heading {
+  width: 100%;
+  text-align: center;
+  font-size: 1.5em;
+}
+
+.log-entries-section {
+  width: 100%;
+  padding: 10px 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.log-entry {
+  margin-top: 10px;
+  font-size: 1em;
+  animation: fadeIn 1.3s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

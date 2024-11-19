@@ -306,7 +306,7 @@ function Lesson2() {
               Remember to use the correct opening and closing tags to make sure
               everything is in its proper place. Once you complete these steps
               correctly, Message types should be display as headings in the
-              table like below.
+              picture like below.
             </p>
             <img
               src={TargetOutput}

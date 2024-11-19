@@ -22,7 +22,7 @@ const getCourseById = async (req, res) => {
     return res.status(400).json({ error: "Course id not found in the url!" });
   }
   try {
-    const course = await courseModel.findById(id).exec();
+    const course = await courseModel.findById(id).populate("lessons").exec();
     if (course) {
       return res.status(200).json(course);
     } else {
@@ -43,7 +43,7 @@ const createNewCourse = async (req, res) => {
     if (
       !name ||
       !image ||
-      !price ||
+      price === undefined ||
       !description ||
       !prerequisites ||
       !Array.isArray(lessons)

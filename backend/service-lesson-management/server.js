@@ -36,6 +36,16 @@ app.use(
   require("./routes/course.routes")
 );
 
+app.use(
+  "/gamified-learning/api/lesson-management/progress",
+  require("./routes/progress.routes")
+);
+
+app.use(
+  "/gamified-learning/api/lesson-management/performance",
+  require("./routes/performance.routes")
+);
+
 app.use(verifyJWT);
 app.use(errorHandler);
 
