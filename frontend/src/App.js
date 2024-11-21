@@ -17,6 +17,7 @@ import Lesson1 from "./courses/html/lesson-1/Lesson1";
 import Lesson2 from "./courses/html/lesson-2/Lesson2";
 import Lesson3 from "./courses/html/lesson-3/Lesson3";
 import Lesson4 from "./courses/html/lesson-4/Lesson4";
+import Lesson5 from "./courses/html/lesson-5/Lesson5";
 // m2 page imports
 
 // m3 page imports
@@ -50,6 +51,7 @@ function App() {
         <Route path="/lesson2" element={<Lesson2 />} />
         <Route path="/lesson3" element={<Lesson3 />} />
         <Route path="/lesson4" element={<Lesson4 />} />
+        <Route path="/lesson5" element={<Lesson5 />} />
       </Routes>
     </div>
   );
