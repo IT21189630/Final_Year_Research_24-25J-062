@@ -1,0 +1,108 @@
+.target-output-img {
+  width: 200px;
+  display: block;
+  margin: 0 auto;
+}
+
+.galactic-map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.planet-info-cont {
+  padding: 6px 10px;
+  min-width: 150px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(6.4px);
+  -webkit-backdrop-filter: blur(6.4px);
+  border: 1px solid rgba(255, 255, 255, 0.31);
+  text-align: center;
+  color: white;
+  text-transform: capitalize;
+  text-decoration: underline;
+}
+
+.planet-info-cont:hover {
+  cursor: pointer;
+}
+
+.fusion-X {
+  position: absolute;
+  top: 60px;
+  left: 200px;
+}
+
+.keplar-22 {
+  position: absolute;
+  top: 220px;
+  right: 100px;
+}
+
+.neptune {
+  position: absolute;
+  top: 460px;
+  right: 150px;
+}
+
+.planet-information-modal {
+  width: 80%;
+  min-height: 250px;
+  background-color: white;
+  position: absolute;
+  border-radius: 10px;
+  padding: 15px;
+  animation: fadeIn 1s ease-in forwards;
+  border: 5px solid #141414;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.close-modal-btn {
+  width: 60px;
+  height: 60px;
+  background-color: white;
+  border: 5px solid #141414;
+  border-radius: 50%;
+  position: absolute;
+  top: -25px;
+  right: -25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.3em;
+}
+
+.close-modal-btn:hover {
+  cursor: pointer;
+}
+
+.planet-name {
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+.planet-info {
+  margin-top: 20px;
+  width: 90%;
+  text-align: justify;
+}
+
+.target-output-img-l4 {
+  margin: 10px auto;
+}
