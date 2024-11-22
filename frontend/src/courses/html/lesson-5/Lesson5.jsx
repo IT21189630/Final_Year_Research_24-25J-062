@@ -32,9 +32,9 @@ function Lesson5() {
 </html>`;
   const hintDuration = 5000;
   const hints = [
-    "Make sure to use <a> tags to create the links with the correct format.",
-    "Double-check that the href attribute links to the correct page URL.",
-    "The text inside the <a> tag should match the planet's name exactly.",
+    "Make sure the file path in the src attribute points directly to the image's location",
+    "The alt attribute should describe what the image shows.",
+    "Remember that the <img> tag should be self-closing.Make sure you include both attributes!",
   ];
   const maximumMargins = { maxHints: 3, maxTime: 300, maxAttempts: 5 };
 
@@ -126,7 +126,7 @@ function Lesson5() {
       }
     } else {
       toast.error("Not an acceptable answer!");
-      if (attemptCounter !== 0) {
+      if (attemptCounter > 0) {
         setAttemptCounter((prev) => prev - 1);
       }
     }
@@ -329,9 +329,7 @@ function Lesson5() {
             <p>
               Remember to use the correct opening and closing tags to make sure
               everything is in its proper place. Once you complete these steps
-              correctly, Link should be displayed and you should able to see the
-              planet information once you clicked it. Refer the sample output
-              below.
+              correctly, Planet images should be display in the art gallery.
             </p>
             <img
               src={TargetOutput}

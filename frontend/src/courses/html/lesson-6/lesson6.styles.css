@@ -1,0 +1,95 @@
+.playground-area-l5 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.tasks-page {
+  width: 490px;
+  height: 670px;
+  background-size: contain;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 30px 20px;
+  font-family: cursive;
+}
+
+.task-page-heading {
+  width: 100%;
+  text-align: center;
+  font-size: 1.5em;
+}
+
+.task-entries-section {
+  width: 100%;
+  padding: 10px 0;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.todo-task {
+  margin-top: 10px;
+  font-size: 1em;
+  text-align: justify;
+  text-justify: inter-word;
+  animation: fadeIn 1.3s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.target-output-img-l5 {
+  max-width: 400px;
+  display: block;
+  margin: 0 auto;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.list-topic {
+  position: relative;
+  font-size: 1.1em;
+}
+
+.list-topic::before {
+  content: "";
+  position: absolute;
+  width: 200%;
+  height: 1px;
+  bottom: -5px;
+  left: 0;
+  border: 1px solid black;
+}
+
+.list-area {
+  min-height: 170px;
+  padding-top: 10px;
+}
