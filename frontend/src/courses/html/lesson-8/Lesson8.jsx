@@ -19,7 +19,7 @@ function Lesson8() {
   const initialCode = `<!DOCTYPE html>
 <html>
   <head>
-    <title>Galactic Discoveries</title>
+    <title>Mission Briefing</title>
   </head>
   <body>
     <!-- Change the necessary code lines in below code -->
