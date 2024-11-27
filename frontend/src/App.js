@@ -24,6 +24,8 @@ import Lesson8 from "./courses/html/lesson-8/Lesson8";
 import Lesson9 from "./courses/html/lesson-9/Lesson9";
 
 import CourseDisplayer from "./pages/pages-student/available-courses/CourseDisplayer";
+import MyEnrollments from "./pages/pages-student/enrolled-courses/MyEnrollments";
+import LevelDisplayer from "./pages/pages-student/level-displayer/LevelDisplayer";
 // m2 page imports
 
 // m3 page imports
@@ -53,6 +55,14 @@ function App() {
             <Route
               path="/student/dashboard/courses"
               element={<CourseDisplayer />}
+            />
+            <Route
+              path="/student/dashboard/enrollments"
+              element={<MyEnrollments />}
+            />
+            <Route
+              path="/student/dashboard/course/levels/:id"
+              element={<LevelDisplayer />}
             />
           </Route>
         </Route>

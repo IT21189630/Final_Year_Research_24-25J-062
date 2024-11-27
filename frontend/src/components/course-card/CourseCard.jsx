@@ -21,7 +21,9 @@ function CourseCard(props) {
         toast.success("You have enrolled to the course!");
       }
     } catch (error) {
-      toast.error("Error occured! Try again shortly!");
+      toast.error(
+        error.response.data ? error.response.data.message : "Enrollment Failed!"
+      );
     }
   };
   return (
@@ -29,7 +31,6 @@ function CourseCard(props) {
       <div className="ribbon">
         <span>Level {index + 1}</span>
       </div>
-      {console.log(`visibility is ${visibility}`)}
       {!visibility && (
         <div className="course-lock-scrn">
           <img src={Lock} alt="lock-icon" className="lock-icon" />

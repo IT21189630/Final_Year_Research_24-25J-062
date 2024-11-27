@@ -1,0 +1,49 @@
+.milestone-container {
+  width: 100px;
+  height: 100px;
+  background-color: var(--evening-blue);
+  border-radius: 10px;
+  margin: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.level-navigator {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  padding: 7px;
+}
+
+.level-navigator:hover {
+  cursor: pointer;
+}
+
+.level-content {
+  width: 100%;
+  height: 100%;
+  border: 2px solid white;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.5em;
+  font-weight: 600;
+  color: white;
+}
+
+.level-locker {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: grey;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+
+.lvl-lock {
+  width: 60%;
+}

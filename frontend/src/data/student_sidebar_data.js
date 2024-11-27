@@ -4,6 +4,7 @@ import { AiFillCode } from "react-icons/ai";
 import { SiScilab } from "react-icons/si";
 import { TbSocial } from "react-icons/tb";
 import { FaGraduationCap } from "react-icons/fa6";
+import { SiProgress } from "react-icons/si";
 
 const studentSidebarData = [
   {
@@ -15,6 +16,11 @@ const studentSidebarData = [
     text: "HTML/CSS Courses",
     icon: <FaLaptopCode />,
     link: "/student/dashboard/courses",
+  },
+  {
+    text: "My Enrollments",
+    icon: <SiProgress />,
+    link: "/student/dashboard/enrollments",
   },
   {
     text: "Practice Lessons",
