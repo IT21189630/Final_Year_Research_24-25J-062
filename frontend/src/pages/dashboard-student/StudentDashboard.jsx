@@ -9,6 +9,8 @@ import { IoClose } from "react-icons/io5";
 import { MdOutlineMenu } from "react-icons/md";
 import { RiLogoutBoxRLine } from "react-icons/ri";
 import { toast } from "react-hot-toast";
+import Logo from "../../images/logo/log-var-6.png";
+import LoadingScreen from "../../components/loading-screen/LoadingScreen";
 
 function StudentDashboard() {
   const dispatch = useDispatch();
@@ -49,7 +51,9 @@ function StudentDashboard() {
       >
         <div className="bar-content">
           {/* content of this container will be replaced with the new logo */}
-          <div className="platform-logo-placeholder"></div>
+          <div className="platform-logo-placeholder">
+            <img src={Logo} alt="sidebar-logo" className="sidebar-logo" />
+          </div>
           {studentLinks.map((item, index) => {
             return (
               <Link

@@ -14,7 +14,7 @@ const studentSidebarData = [
   {
     text: "HTML/CSS Courses",
     icon: <FaLaptopCode />,
-    link: "/student/comp",
+    link: "/student/dashboard/courses",
   },
   {
     text: "Practice Lessons",

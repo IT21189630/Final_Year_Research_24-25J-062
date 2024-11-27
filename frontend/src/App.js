@@ -22,6 +22,8 @@ import Lesson6 from "./courses/html/lesson-6/Lesson6";
 import Lesson7 from "./courses/html/lesson-7/Lesson7";
 import Lesson8 from "./courses/html/lesson-8/Lesson8";
 import Lesson9 from "./courses/html/lesson-9/Lesson9";
+
+import CourseDisplayer from "./pages/pages-student/available-courses/CourseDisplayer";
 // m2 page imports
 
 // m3 page imports
@@ -48,6 +50,10 @@ function App() {
         <Route path="/student/dashboard" element={<StudentProtectedRoute />}>
           <Route path="/student/dashboard/" element={<StudentDashboard />}>
             <Route path="/student/dashboard/" element={<MarkupAdmin />} />
+            <Route
+              path="/student/dashboard/courses"
+              element={<CourseDisplayer />}
+            />
           </Route>
         </Route>
 
