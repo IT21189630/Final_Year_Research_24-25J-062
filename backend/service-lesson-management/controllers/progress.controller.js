@@ -95,7 +95,10 @@ const updateCourseProgress = async (req, res) => {
     }
 
     const filter = { user_id: userId, course_id: courseId };
-    const update = { current_level: currentLevel, current_xp: xpPoints };
+    const update = {
+      current_level: currentLevel,
+      $inc: { current_xp: xpPoints },
+    };
     const targetProgressRecord = await progressModel.findOneAndUpdate(
       filter,
       update,
