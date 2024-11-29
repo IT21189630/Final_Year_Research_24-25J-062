@@ -12,15 +12,12 @@ const submissionSchema = mongoose.Schema(
       required: true,
     },
 
-    htmlCode: {
+    Similarity: {
       type: String,
       required: true,
     },
 
-    cssCode: {
-      type: String,
-      required: true,
-    },
+    submittedAt: { type: Date, default: Date.now },
 
   },
   { timestamps: true }

@@ -4,6 +4,8 @@ const HtmlCssChallenge = () => {
   const [htmlCode, setHtmlCode] = useState("<div>Hello World</div>");
   const [cssCode, setCssCode] = useState("div { color: red; }");
   const [preview, setPreview] = useState("");
+  const [similarity, setSimilarity] = useState("")
+
 
   // Update the live preview
   const updatePreview = () => {
@@ -23,10 +25,15 @@ const HtmlCssChallenge = () => {
       const response = await fetch("http://localhost:5000/api/submit-html-css", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ htmlCode, cssCode, challengeId: "refImg2" }),
+        body: JSON.stringify({ htmlCode, cssCode, challengeId: "refImg1" }),
       });
       const data = await response.json();
-      alert(`Screenshot saved at: ${data.screenshotPath} Similarity:${data.similarity}`);
+
+      if(data){
+        alert(`Screenshot saved at: ${data.screenshotPath} Similarity:${data.similarity}`);
+        setSimilarity(data.similarity);
+      }
+      
     } catch (err) {
       console.error("Error submitting solution:", err);
     }
@@ -35,12 +42,12 @@ const HtmlCssChallenge = () => {
   return (
     <div>
       <h1>HTML/CSS Challenge</h1>
-      <textarea
+      <textarea style={{width:650, height:650}}
         value={htmlCode}
         onChange={(e) => setHtmlCode(e.target.value)}
         placeholder="Write HTML code"
       />
-      <textarea
+      <textarea style={{width:650, height:650}}
         value={cssCode}
         onChange={(e) => setCssCode(e.target.value)}
         placeholder="Write CSS code"
@@ -49,9 +56,10 @@ const HtmlCssChallenge = () => {
       <iframe
         title="Live Preview"
         srcDoc={preview}
-        style={{ width: "100%", height: "700px", border: "1px solid black" }}
+        style={{ width: "85%", height: "500px", border: "1px solid black" }}
       />
       <button onClick={handleSubmit}>Submit</button>
+      <h2>Similarity : {similarity}</h2>
     </div>
   );
 };

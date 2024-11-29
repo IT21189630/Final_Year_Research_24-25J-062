@@ -1,27 +1,30 @@
-const { model } = require("mongoose");
-const submissionModel = require("../models/submission.model");
-const asyncHandler = require("express-async-handler");
+const Submission = require("../models/submission.model");
+const { renderHtmlCss, compareImages } = require("../utils/puppeteerUtils");
 
-const storeSubmission = asyncHandler(async (req, res) => {
-    const { userId, challengeId, htmlCode, cssCode } = req.body;
+exports.submitHtmlCss = async (req, res) => {
+  const { htmlCode, cssCode, challengeId } = req.body;
 
-    try {
-        const submission = new submissionModel({
-            userId,
-            challengeId,
-            htmlCode,
-            cssCode,
-        });
-        
-        await submission.save();
-        res.status(200).send({ message: 'Submission stored successfully' });
+  try {
+    // Render the HTML/CSS and take a screenshot
+    const screenshotPath = await renderHtmlCss(htmlCode, cssCode, challengeId);
 
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Internal Server Error" });
-	}
-});
+    // Compare with the reference image
+    const referencePath = `reference-images/${challengeId}.png`;
+    const similarity = await compareImages(screenshotPath, referencePath);
 
-module.exports = {
-	storeSubmission
+    // Save the submission to the database
+    const submission = new Submission({
+      challengeId,
+      htmlCode,
+      cssCode,
+      screenshotPath,
+      similarity,
+    });
+    await submission.save();
+
+    res.status(200).send({ submission });
+  } catch (error) {
+    console.error("Error processing submission:", error);
+    res.status(500).send({ error: "Failed to process submission" });
+  }
 };

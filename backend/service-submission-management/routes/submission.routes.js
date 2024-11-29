@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { storeSubmission } = require('../controllers/evaluationController');
+const { submitHtmlCss } = require('../controllers/submission.controller');
 
-router.post('/submit-html-css', storeSubmission);
+router.post('/submit-html-css', submitHtmlCss);
 module.exports = router;
 

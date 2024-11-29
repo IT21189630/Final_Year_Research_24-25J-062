@@ -12,6 +12,7 @@ import MarkupAdmin from "./pages/pages-admin/dummy-page/MarkupAdmin";
 import StudentProtectedRoute from "./route-guards/StudentProtectedRoute";
 import StudentDashboard from "./pages/dashboard-student/StudentDashboard";
 
+import DailyChallenge from "./pages/social-collab-platform/DailyChallenge";
 import HtmlCssChallenge from "./pages/submission/HtmlCssChallenge";
 
 // m1 page imports
@@ -26,7 +27,8 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        <Route path="/" element={<HtmlCssChallenge />} />
+        <Route path="/" element={<DailyChallenge/>} />
+        <Route path="/attemptChallenge" element={<HtmlCssChallenge/>} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<Signup />} />
         <Route path="*" element={<NotFound />} />
