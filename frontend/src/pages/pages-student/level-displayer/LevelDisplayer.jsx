@@ -23,7 +23,6 @@ function LevelDisplayer() {
         setCourse(response.data);
         setLoading(false);
         toast.success("Course levels loaded!");
-        console.log(response.data); // Ensure this logs the correct structure
       }
     } catch (error) {
       setError(true);
@@ -36,9 +35,9 @@ function LevelDisplayer() {
     fetchCourseLevels();
   }, [user_id]);
 
-  if (loading) return <></>;
+  if (loading) return <LoadingScreen />;
   if (error) return <ErrorPage />;
-  if (!course) return <div>No course data available.</div>;
+  if (!course) return <LoadingScreen />;
 
   return (
     <>
