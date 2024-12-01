@@ -51,6 +51,11 @@ app.use(
   require("./routes/recommendation.routes")
 );
 
+app.use(
+  "/gamified-learning/api/lesson-management/support_lessons",
+  require("./routes/supplimentary_lessons.routes")
+);
+
 app.use(verifyJWT);
 app.use(errorHandler);
 

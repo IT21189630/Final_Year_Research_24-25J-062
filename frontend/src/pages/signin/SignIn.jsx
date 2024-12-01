@@ -1,11 +1,16 @@
 import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
 import axiosInstance from "../../axios/axiosInstance";
+import Logo from "../../images/logo/log-var-6.png";
 import { useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { login } from "../../features/User.slice";
 import { toast } from "react-hot-toast";
 import { Admin, Student } from "../../configurations/userRoles";
+import { FaFacebookSquare } from "react-icons/fa";
+import { FaSquareXTwitter } from "react-icons/fa6";
+import { FaInstagramSquare } from "react-icons/fa";
+import { FaLinkedin } from "react-icons/fa";
 import "./signin.styles.css";
 
 function SignIn() {
@@ -75,7 +80,24 @@ function SignIn() {
   return (
     <div className="signin-page">
       {/* palceholder image container */}
-      <div className="signin-placeholder"></div>
+      <div className="signin-placeholder">
+        <div className="logo-area-comp">
+          <img src={Logo} alt="company-logo" className="logo-comp" />
+          <span className="slogan">WebQuest: "Learn, Create, Expolore"</span>
+        </div>
+        <div className="company-footer">
+          <span className="horizontal-divider"></span>
+          <div className="com-info">
+            Developed & Maintained by Web Quest PVT. Ltd. 2024&#8482;
+          </div>
+          <div className="social-media-link-cont">
+            <FaFacebookSquare className="social-media-icon" />
+            <FaSquareXTwitter className="social-media-icon" />
+            <FaInstagramSquare className="social-media-icon" />
+            <FaLinkedin className="social-media-icon" />
+          </div>
+        </div>
+      </div>
 
       {/* signin form container */}
       <div className="signin-form-area">

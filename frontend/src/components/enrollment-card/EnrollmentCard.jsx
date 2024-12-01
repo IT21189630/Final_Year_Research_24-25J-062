@@ -1,7 +1,7 @@
 import React from "react";
 import "./enrollment-card.css";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { save } from "../../features/Progress.slice";
 import { HiSparkles } from "react-icons/hi2";
 import { FaPlay } from "react-icons/fa";

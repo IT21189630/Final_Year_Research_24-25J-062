@@ -21,8 +21,10 @@ function Milestone(props) {
       })
     );
   };
+
   return (
     <div className="milestone-container">
+      {level % 5 == 0 && <div className="cp-indicator">cp</div>}
       {lock && (
         <div className="level-locker">
           <img src={Lock} alt="lock" className="lvl-lock" />

@@ -3,6 +3,7 @@
   height: 650px;
   background-size: contain;
   background-position: center;
+  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;

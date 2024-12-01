@@ -9,6 +9,7 @@ import Timer from "../../../components/timer/Timer";
 import { useSelector, useDispatch } from "react-redux";
 import { updateProgress } from "../../../features/Progress.slice";
 import { updateCourseProgress } from "../../../components/course-progress-updater/CourseProgressUpdater";
+import { recommendationEngine } from "../../../components/course-progress-updater/RecommendationEngine";
 import { IoMdTimer } from "react-icons/io";
 import { FaStar } from "react-icons/fa";
 import { toast } from "react-hot-toast";
@@ -132,6 +133,7 @@ function Lesson5() {
         setPerformanceScore(score);
         setShowModal(true);
         const nextLevel = 6;
+        recommendationEngine(score, "HTML-101", "one", user_id);
         const updateFlag = await updateCourseProgress(
           user_id,
           course_id,

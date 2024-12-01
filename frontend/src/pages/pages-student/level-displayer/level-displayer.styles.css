@@ -17,8 +17,15 @@
   background-image: url(https://firebasestorage.googleapis.com/v0/b/image-uploading-c4e7e.appspot.com/o/background-white.jpg?alt=media&token=dd661be8-0cf6-4bc1-9f27-591668f1fa26);
 }
 
-.level-displayer-container {
+.ld-main-cont {
+  display: flex;
   width: 100%;
+  min-height: calc(100vh - 60px);
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.level-displayer-container {
   height: 100%;
   z-index: 1;
   padding-left: 150px;
@@ -68,4 +75,98 @@
 
 .enrolled-course-info-container::-webkit-scrollbar-thumb {
   background-color: var(--evening-blue);
+}
+
+.cp-alert-box {
+  width: 100%;
+  padding: 10px 40px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 50px;
+}
+
+.cp-placeholder {
+  width: 35px;
+  height: 35px;
+  background-color: var(--crimson-red);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin: 0 10px;
+}
+
+.cp-alert-box > span {
+  font-weight: 600;
+  width: 750px;
+}
+
+.ld-stat-box {
+  background-color: #f2f0e3;
+  border-radius: 10px;
+  border: 3px solid #1e1e1e;
+  z-index: 1;
+  padding: 10px;
+  transform: translateX(-150px) translateY(-190px);
+}
+
+.ld-course-progress-container {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(7.6px);
+  -webkit-backdrop-filter: blur(7.6px);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  min-height: 40px;
+  width: 100%;
+}
+
+.ld-spark {
+  font-size: 1em;
+  margin-right: 10px;
+}
+
+.ld-progress-label {
+  font-size: 1em;
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+.ld-enr-progress-bar-cont {
+  width: 100%;
+  position: relative;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.ld-enr-filled-bar,
+.ld-enr-full-bar {
+  position: absolute;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.ld-enr-full-bar {
+  width: 100%;
+  background-color: var(--accent-color-one);
+}
+
+.ld-enr-filled-bar {
+  background-color: var(--crimson-red);
+  z-index: 1;
+}
+
+.ld-curr-progress {
+  font-size: 1em;
+  color: var(--crimson-red);
+  margin-left: 10px;
 }

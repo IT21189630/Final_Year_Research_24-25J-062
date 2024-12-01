@@ -26,6 +26,7 @@ import Lesson9 from "./courses/html/lesson-9/Lesson9";
 import CourseDisplayer from "./pages/pages-student/available-courses/CourseDisplayer";
 import MyEnrollments from "./pages/pages-student/enrolled-courses/MyEnrollments";
 import LevelDisplayer from "./pages/pages-student/level-displayer/LevelDisplayer";
+import SupportLessonsDisplayer from "./pages/pages-student/support-lessons/SupportLessonsDisplayer";
 // m2 page imports
 
 // m3 page imports
@@ -36,7 +37,7 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<SignIn />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<Signup />} />
         <Route path="*" element={<NotFound />} />
@@ -63,6 +64,10 @@ function App() {
             <Route
               path="/student/dashboard/course/levels/:id"
               element={<LevelDisplayer />}
+            />
+            <Route
+              path="/student/dashboard/course/support_lessons"
+              element={<SupportLessonsDisplayer />}
             />
           </Route>
         </Route>

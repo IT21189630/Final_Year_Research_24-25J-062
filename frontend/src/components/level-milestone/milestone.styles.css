@@ -5,7 +5,6 @@
   border-radius: 10px;
   margin: 20px;
   position: relative;
-  overflow: hidden;
 }
 
 .level-navigator {
@@ -36,6 +35,7 @@
   position: absolute;
   width: 100%;
   height: 100%;
+  border-radius: 10px;
   background-color: grey;
   z-index: 1;
   display: flex;
@@ -46,4 +46,21 @@
 
 .lvl-lock {
   width: 60%;
+}
+
+.cp-indicator {
+  width: 35px;
+  height: 35px;
+  background-color: var(--crimson-red);
+  border-radius: 50px;
+  position: absolute;
+  color: white;
+  right: -10px;
+  top: -10px;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  font-weight: 600;
 }

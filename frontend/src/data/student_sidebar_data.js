@@ -25,7 +25,7 @@ const studentSidebarData = [
   {
     text: "Practice Lessons",
     icon: <FaGraduationCap />,
-    link: "/student/comp",
+    link: "/student/dashboard/course/support_lessons",
   },
   {
     text: "Javascript Courses",
