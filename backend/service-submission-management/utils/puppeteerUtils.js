@@ -2,9 +2,9 @@ const puppeteer = require("puppeteer");
 const fs = require("fs");
 const path = require("path");
 
-const renderHtmlCss = async (htmlCode, cssCode, challengeId) => {
-    const tempFilePath = path.join(__dirname, `temp/${challengeId}.html`);
-    const screenshotPath = path.join(__dirname, `screenshots/${challengeId}.png`);
+exports.renderHtmlCss = async (htmlCode, cssCode, challengeId) => {
+    const tempFilePath = path.join(__dirname, `../temp/${challengeId}.html`);
+    const screenshotPath = path.join(__dirname, `../screenshots/${challengeId}.png`);
   
     // Combine HTML and CSS into a single file
     const htmlContent = `

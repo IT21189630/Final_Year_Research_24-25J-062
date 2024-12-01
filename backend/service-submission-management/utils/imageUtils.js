@@ -1,7 +1,24 @@
 const pixelmatch = require("pixelmatch");
 const { createCanvas, loadImage } = require("canvas");
+const sharp = require("sharp");
 
-const compareImages = async (image1Path, image2Path) => {
+exports.compareImages = async (image1Path, image2Path, userHtml) => {
+
+    // Check for blank submission
+    if (!userHtml.trim()) {
+        return 0; // Directly return 0% similarity for blank HTML
+    }
+
+    // // Normalize images
+    // const normalizeImage = async (imagePath) => {
+    //     return await sharp(imagePath)
+    //         .flatten({ background: "#ffffff" }) // Ensure consistent background
+    //         .toBuffer();
+    // };
+
+    // const img1Buffer = await normalizeImage(image1Path);
+    // const img2Buffer = await normalizeImage(image2Path);
+
     const img1 = await loadImage(image1Path);
     const img2 = await loadImage(image2Path);
   

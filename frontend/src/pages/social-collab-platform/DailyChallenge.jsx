@@ -98,7 +98,6 @@ const DailyChallenge = () => {
 
       {activeTab === "Task" && (
         <div>
-          <h2>Challenge</h2>
           <div>
             <h4>{challenge.title}</h4>
             <h6 style={{ whiteSpace: "pre-wrap", lineHeight: "1.5" }}>
@@ -110,7 +109,7 @@ const DailyChallenge = () => {
             </h6>
             <img style={{width:600}} src={challenge.refImage} alt="My Image" ></img>
           </div>
-          <Link to="/attemptChallenge"><button>Attempt</button></Link>
+          <Link to="/student/dashboard/attemptChallenge"><button>Attempt</button></Link>
           
         </div>
       )}

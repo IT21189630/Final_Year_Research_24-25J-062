@@ -27,8 +27,7 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        <Route path="/" element={<DailyChallenge/>} />
-        <Route path="/attemptChallenge" element={<HtmlCssChallenge/>} />
+        <Route path="/" element={<Home/>} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<Signup />} />
         <Route path="*" element={<NotFound />} />
@@ -44,6 +43,8 @@ function App() {
         <Route path="/student/dashboard" element={<StudentProtectedRoute />}>
           <Route path="/student/dashboard/" element={<StudentDashboard />}>
             <Route path="/student/dashboard/" element={<MarkupAdmin />} />
+            <Route path="/student/dashboard/challenge" element={<DailyChallenge/>} />
+            <Route path="/student/dashboard/attemptChallenge" element={<HtmlCssChallenge/>} />
           </Route>
         </Route>
       </Routes>

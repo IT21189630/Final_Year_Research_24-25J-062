@@ -35,7 +35,7 @@ const studentSidebarData = [
   {
     text: "Dev Collab Platform",
     icon: <TbSocial />,
-    link: "/student/comp",
+    link: "/student/dashboard/challenge",
   },
 ];
 

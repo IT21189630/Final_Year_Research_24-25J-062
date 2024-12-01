@@ -7,13 +7,18 @@ const submissionSchema = mongoose.Schema(
       required: true,
     },
 
+    username: {
+      type: String,
+      required: true,
+    },
+
     challengeId: {
       type: String,
       required: true,
     },
 
-    Similarity: {
-      type: String,
+    visualSimilarity: {
+      type: Number,
       required: true,
     },
 
