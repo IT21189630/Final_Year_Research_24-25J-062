@@ -46,9 +46,13 @@ function MyEnrollments() {
             <ErrorPage />
           ) : (
             <div className="enrolled-course-info-container">
-              {enrolledCourses.map((course, index) => {
-                return <EnrollmentCard key={index} {...course} />;
-              })}
+              {enrolledCourses?.length > 0 ? (
+                enrolledCourses.map((course, index) => {
+                  return <EnrollmentCard key={index} {...course} />;
+                })
+              ) : (
+                <div> No enrolled courses available </div>
+              )}
             </div>
           )}
         </div>

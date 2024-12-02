@@ -10,7 +10,7 @@ const studentSidebarData = [
   {
     text: "My Progress Tracker",
     icon: <MdDashboard />,
-    link: "/student/comp",
+    link: "/student/dashboard/overview",
   },
   {
     text: "HTML/CSS Courses",

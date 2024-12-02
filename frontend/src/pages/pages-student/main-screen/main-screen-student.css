@@ -1,0 +1,170 @@
+.ms-student-container {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.filter-container {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-size: cover;
+  filter: opacity(90%) grayscale(0.6);
+  background-image: url(https://firebasestorage.googleapis.com/v0/b/image-uploading-c4e7e.appspot.com/o/background-white.jpg?alt=media&token=dd661be8-0cf6-4bc1-9f27-591668f1fa26);
+}
+
+.ms-content-container {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  padding-left: 150px;
+  padding-right: 10px;
+  scale: 0.9;
+}
+
+.page-headline {
+  position: relative;
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 2.5em;
+  color: var(--evening-blue);
+  width: 100%;
+}
+
+.page-headline::after {
+  position: absolute;
+  content: " ";
+  width: 80%;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--crimson-red);
+  bottom: -10px;
+  left: 0;
+}
+
+.ms-cont-row {
+  width: 100%;
+  min-height: 300px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.overview-btn-container {
+  width: 400px;
+  height: 300px;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 10px;
+}
+
+.btn-tile {
+  width: 175px;
+  height: 125px;
+  background-color: white;
+  margin: 5px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+.btn-tile:hover {
+  scale: 0.9;
+  cursor: pointer;
+}
+
+.notifications {
+  background-color: #0093e9;
+  background-image: linear-gradient(160deg, #0093e9 0%, #80d0c7 100%);
+}
+
+.achievements {
+  background-color: #fbab7e;
+  background-image: linear-gradient(62deg, #fbab7e 0%, #f7ce68 100%);
+}
+
+.tokens {
+  background-color: #ff9a8b;
+  background-image: linear-gradient(
+    90deg,
+    #ff9a8b 0%,
+    #ff6a88 55%,
+    #ff99ac 100%
+  );
+}
+
+.badges {
+  background-color: #ff3cac;
+  background-image: linear-gradient(
+    225deg,
+    #ff3cac 0%,
+    #784ba0 50%,
+    #2b86c5 100%
+  );
+}
+
+.tile-icon {
+  font-size: 30px;
+  color: white;
+}
+
+.tile-icon-lg {
+  font-size: 45px;
+  color: white;
+  margin: 10px;
+}
+
+.tile-name {
+  font-size: 20px;
+  color: white;
+}
+
+.daily-challenge-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 700px;
+  height: 265px;
+  border-radius: 10px;
+}
+
+.fr {
+  background: #136a8a;
+  background: -webkit-linear-gradient(to right, #267871, #136a8a);
+  background: linear-gradient(to right, #267871, #136a8a);
+}
+
+.sr {
+  margin-left: 15px;
+  background: #43cea2;
+  background: -webkit-linear-gradient(to right, #185a9d, #43cea2);
+  background: linear-gradient(to right, #185a9d, #43cea2);
+}
+
+.ov-info-btn-container {
+  background: #485563;
+  background: -webkit-linear-gradient(to right, #29323c, #485563);
+  background: linear-gradient(to right, #29323c, #485563);
+  width: 370px;
+  height: 265px;
+  border-radius: 10px;
+  margin-left: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}

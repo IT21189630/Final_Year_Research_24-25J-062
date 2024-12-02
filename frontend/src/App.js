@@ -27,6 +27,7 @@ import CourseDisplayer from "./pages/pages-student/available-courses/CourseDispl
 import MyEnrollments from "./pages/pages-student/enrolled-courses/MyEnrollments";
 import LevelDisplayer from "./pages/pages-student/level-displayer/LevelDisplayer";
 import SupportLessonsDisplayer from "./pages/pages-student/support-lessons/SupportLessonsDisplayer";
+import MainScreenStudent from "./pages/pages-student/main-screen/MainScreenStudent";
 // m2 page imports
 
 // m3 page imports
@@ -52,7 +53,7 @@ function App() {
         {/* student page routes */}
         <Route path="/student/dashboard" element={<StudentProtectedRoute />}>
           <Route path="/student/dashboard/" element={<StudentDashboard />}>
-            <Route path="/student/dashboard/" element={<MarkupAdmin />} />
+            <Route path="/student/dashboard/" element={<MainScreenStudent />} />
             <Route
               path="/student/dashboard/courses"
               element={<CourseDisplayer />}
@@ -68,6 +69,10 @@ function App() {
             <Route
               path="/student/dashboard/course/support_lessons"
               element={<SupportLessonsDisplayer />}
+            />
+            <Route
+              path="/student/dashboard/overview"
+              element={<MainScreenStudent />}
             />
           </Route>
         </Route>

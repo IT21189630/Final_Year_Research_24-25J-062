@@ -49,11 +49,13 @@ const createCourseProgress = async (req, res) => {
   }
   try {
     const duplicate = await progressModel
-      .find({ user_id: userId, course_id: courseId })
+      .findOne({ user_id: userId, course_id: courseId })
       .exec();
 
     if (duplicate) {
-      return res.status(403).json({ message: "You are already enrolled!" });
+      return res
+        .status(403)
+        .json({ message: "You have already enrolled to the course!" });
     }
     const createdProgressRecord = await progressModel.create({
       course_id: courseId,
