@@ -71,6 +71,7 @@ const HtmlCssChallenge = () => {
         cssCode: cssCode === "" ? " " : cssCode
       });
       setSimilarity(response.data.similarity);
+      alert('Successfully submitted the code.');
     } catch (error) {
       console.error('Error evaluating challenge:', error);
       alert('An error occurred while evaluating your code.');
@@ -99,7 +100,7 @@ const HtmlCssChallenge = () => {
       />
       <button onClick={handleSubmit}>Submit</button>
       {similarity>=0?
-      <h2>Similarity : {parseFloat(similarity.toFixed(6))*100}%</h2>
+      <h2>Similarity Score: {parseFloat(similarity.toFixed(6))*100}%</h2>
       :
       ""
       }
