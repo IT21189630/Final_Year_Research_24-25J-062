@@ -28,6 +28,8 @@ import Lesson9 from "./courses/html/lesson-9/Lesson9";
 
 // m4 page imports
 
+import JavaScriptLesson1 from "./courses/javascript/lesson-1/JSLesson1";
+
 function App() {
   return (
     <div className="App">
@@ -60,6 +62,8 @@ function App() {
         <Route path="/lesson7" element={<Lesson7 />} />
         <Route path="/lesson8" element={<Lesson8 />} />
         <Route path="/lesson9" element={<Lesson9 />} />
+
+        <Route path="/js/lesson1" element={<JavaScriptLesson1 />} />
       </Routes>
     </div>
   );

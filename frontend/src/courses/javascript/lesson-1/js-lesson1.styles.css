@@ -1,0 +1,261 @@
+.js-main-container {
+  margin: 0 auto;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  font-family: "Poppins", sans-serif;
+}
+
+.js-workbench-area {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.js-lesson-info-ribbon {
+  width: 100%;
+  height: 60px;
+  padding: 10px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.js-lesson {
+  font-size: 1.7em;
+  font-weight: 600;
+  color: var(--evening-blue);
+}
+
+.js-timer,
+.js-attempt-counter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--evening-blue);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.js-timer-icon {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2em;
+  color: orange;
+}
+
+.js-time-display {
+  font-size: 1.2em;
+  color: white;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 5px;
+}
+
+.js-attempt-icon {
+  margin-right: 5px;
+  color: gold;
+}
+
+.js-attempts-left {
+  color: white;
+  font-size: 1.2em;
+}
+
+.js-lesson-content {
+  width: 100%;
+  padding: 20px;
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+.js-lesson-content::-webkit-scrollbar {
+  width: 6px;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.js-lesson-content::-webkit-scrollbar-thumb {
+  width: 6px;
+  background-color: var(--evening-blue);
+  border-radius: 1px;
+}
+
+.js-lesson-heading {
+  font-weight: 600;
+  color: var(--cosmic-purple);
+  margin-bottom: 20px;
+}
+
+.js-lesson-sub-headings {
+  font-family: monospace;
+  font-weight: 600;
+  color: var(--evening-blue);
+  position: relative;
+  margin: 20px 0;
+}
+
+.js-lesson-sub-headings::after {
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  content: "";
+  width: 60%;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--crimson-red);
+}
+
+.js-introduction {
+  width: 100%;
+  max-width: 800px;
+  text-align: justify;
+  margin-bottom: 20px;
+}
+
+.js-instruction {
+  max-width: 600px;
+  font-family: monospace;
+  font-style: italic;
+  font-size: 1.1em;
+  margin-bottom: 20px;
+
+}
+
+.js-task-item {
+  max-width: 600px;
+  font-family: monospace;
+  font-style: italic;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.js-attempt-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 15px auto;
+  font-size: 1.1em;
+  color: white;
+  background-color: var(--evening-blue);
+  width: 300px;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  transition: 0.4s;
+}
+
+.js-attempt-btn:hover {
+  cursor: pointer;
+  background-color: var(--space-blue);
+}
+
+.js-editor-container {
+  width: 100%;
+  margin: 20px 0;
+}
+
+.js-hint-btn,
+.js-submit-btn {
+  margin: 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.js-hint-btn {
+  background-color: var(--cosmic-purple);
+  color: white;
+}
+
+.js-submit-btn {
+  background-color: var(--evening-blue);
+  color: white;
+}
+
+.js-hint-btn:hover,
+.js-submit-btn:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+/* Mission Control Display */
+.js-mission-control {
+  position: relative;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.js-control-panel {
+  width: 80%;
+  height: 80%;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.js-astronaut-hint {
+  position:absolute;
+  width: 450px;
+  height: 250px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  transition: 1s ease-in-out;
+  opacity: 1;
+  bottom: 0;
+  right: 0;
+}
+
+.js-astronaut-guide {
+  width: 100%;
+}
+
+.js-hint-text {
+  position: absolute;
+  top: -35px;
+  left: 30px;
+  max-width: 310px;
+  max-height: 60px;
+  font-style: italic;
+  font-weight: 600;
+  font-size: 0.9em;
+  color: black;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.js-mission-parameter {
+  color: #00ff00;
+  font-family: monospace;
+  font-size: 1.2em;
+  margin: 10px 0;
+  text-shadow: 0 0 5px #00ff00;
+}
+
+.fade {
+  transform: translateY(250px);
+  transition: 1s ease-in-out;
+  opacity: 0;
+}
