@@ -160,13 +160,16 @@ function JSLesson1() {
               - while HTML built the spaceship's structure and CSS made it look amazing, 
               JavaScript is what makes it actually fly! Just like how astronauts need to 
               initialize their systems before takeoff, in JavaScript, we start by 
-              learning about variables. Variables are like the storage containers 
+              learning about variables. 
+              <br/><br/>
+              Variables are like the storage containers 
               in your spaceship where you keep important information. 
               When you declare a variable, you're creating a special container 
               with a name, and you can put different types of data in it - 
               numbers for coordinates, text for mission logs, or true/false values 
               for system checks. Every time you store something in a variable, 
               it's like logging critical mission data that you can use later. 
+              <br/><br/>
               The most important thing about variables is that they can change 
               during your mission - just like how a spaceship's speed or 
               altitude changes during flight. In JavaScript, we create these 
@@ -240,7 +243,7 @@ function JSLesson1() {
               />
               <p className="js-hint-text">{hint}</p>
             </div>
-            <div className="js-mission-parameter">Test Interface</div>
+            <div className="js-mission-parameter-topic">System Initialization Progress</div>
 
             {/* Mission Control Display that updates based on correct variables */}
             {missionNameVisible && (
