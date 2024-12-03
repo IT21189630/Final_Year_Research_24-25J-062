@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from 'axios';
+import "./htmlCssChallenge.css";
 
 const HtmlCssChallenge = () => {
   // const [htmlCode, setHtmlCode] = useState("<div>Hello World</div>");
@@ -80,27 +81,27 @@ const HtmlCssChallenge = () => {
 
 
   return (
-    <div style={{margin:30}}>
+    <div className="container">
       <h1>HTML/CSS Challenge</h1>
-      <textarea style={{width:650, height:650}}
+      <textarea style={{width:580, height:580}}
         value={htmlCode}
         onChange={(e) => setHtmlCode(e.target.value)}
         placeholder="Write HTML code"
       />
-      <textarea style={{width:650, height:650}}
+      <textarea style={{width:580, height:580}}
         value={cssCode}
         onChange={(e) => setCssCode(e.target.value)}
         placeholder="Write CSS code"
       />
-      <button onClick={updatePreview}>Update Preview</button>
+      <button className='submit-btn' onClick={updatePreview}>Update Preview</button>
       <iframe
         title="Live Preview"
         srcDoc={preview}
-        style={{ width: "85%", height: "500px", border: "1px solid black" }}
+        style={{ width: "89%", height: "500px", border: "1px solid black" }}
       />
-      <button onClick={handleSubmit}>Submit</button>
+      <button className='submit-btn' onClick={handleSubmit}>Submit</button>
       {similarity>=0?
-      <h2>Similarity Score: {parseFloat(similarity.toFixed(6))*100}%</h2>
+      <h2 className="similarity">Similarity Score: {parseFloat(similarity.toFixed(6))*100}%</h2>
       :
       ""
       }

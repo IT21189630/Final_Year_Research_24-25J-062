@@ -1,0 +1,22 @@
+.submit-btn {
+    padding: 3px 10px;
+    width:fit-content;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: 600;
+    color: #1e1e1e;
+    background-color: #f2b43b;
+    border: none;
+    transition: 0.2s;
+    margin: 0 0 0 2px;
+  }
+
+.container {
+    margin-left: 85px;
+    margin-right: 0;
+    padding: "30px";
+}
+
+.similarity{
+    margin: 20px 0 40px 0
+}

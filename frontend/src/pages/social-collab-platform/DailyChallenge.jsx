@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import "./dailyChallenge.css";
 
 const DailyChallenge = () => {
   const [activeTab, setActiveTab] = useState("Best-attempts");
@@ -41,7 +42,7 @@ const DailyChallenge = () => {
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
+    <div className='container'>
       <h1>Daily Challenge</h1>
       <p>{todayDate}</p>
       <div style={{ marginBottom: "20px" }}>
@@ -49,10 +50,10 @@ const DailyChallenge = () => {
           <button
             key={tab}
             style={{
-              margin: "0 10px",
+              margin: "0 20px 0 0",
               padding: "10px 20px",
               cursor: "pointer",
-              backgroundColor: activeTab === tab ? "#007BFF" : "#E0E0E0",
+              backgroundColor: activeTab === tab ? "var(--evening-blue)" : "#E0E0E0",
               color: activeTab === tab ? "#fff" : "#000",
               border: "none",
               borderRadius: "5px",
@@ -104,12 +105,16 @@ const DailyChallenge = () => {
               {challenge.description}
             </h6>
             <br></br>
-            <h6>
-              For reference, your final output should visually match the following:<br></br><br></br>Reference Image:
-            </h6>
+            <h5>
+              For reference, your final output should visually match the following:<br></br>
+            </h5>
             <img style={{width:600}} src={challenge.refImage} alt="My Image" ></img>
           </div>
-          <Link to="/student/dashboard/attemptChallenge"><button>Attempt</button></Link>
+          <Link to="/student/dashboard/attemptChallenge">
+            <button className="attempt-btn">
+              Attempt
+            </button>
+          </Link>
           
         </div>
       )}
