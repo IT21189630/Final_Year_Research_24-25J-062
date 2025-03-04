@@ -1,0 +1,354 @@
+import React, { useState, useEffect } from 'react';
+import MonacoEditor from 'react-monaco-editor';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
+import { parseFragment } from 'parse5'; // Corrected for handling HTML fragments
+import './virtualLab.css';
+import { MdDelete } from "react-icons/md";
+
+function VirtualLab() {
+  const [htmlCode, setHtmlCode] = useState('');
+  const [cssCode, setCssCode] = useState('');
+  const [jsCode, setJsCode] = useState('');
+  const [message, setMessage] = useState('');
+  const [showPrompt, setShowPrompt] = useState(false);
+  const [codeName, setCodeName] = useState('');
+  const [userSnippets, setUserSnippets] = useState([]);
+  const [currentSnippetId, setCurrentSnippetId] = useState(null);
+  const [htmlErrors, setHtmlErrors] = useState([]);
+
+  const editorOptions = {
+    selectOnLineNumbers: true,
+    minimap: { enabled: false },
+  };
+
+  const user = useSelector((state) => state.user);
+  const userId = user?.user_id;
+
+  useEffect(() => {
+    const savedHtml = localStorage.getItem('htmlCode') || '';
+    const savedCss = localStorage.getItem('cssCode') || '';
+    const savedJs = localStorage.getItem('jsCode') || '';
+    setHtmlCode(savedHtml);
+    setCssCode(savedCss);
+    setJsCode(savedJs);
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('htmlCode', htmlCode);
+  }, [htmlCode]);
+
+  useEffect(() => {
+    localStorage.setItem('cssCode', cssCode);
+  }, [cssCode]);
+
+  useEffect(() => {
+    localStorage.setItem('jsCode', jsCode);
+  }, [jsCode]);
+
+  useEffect(() => {
+    if (userId) {
+      axios
+        .get(`http://localhost:4010/virtual-lab/get-user-snippet/${userId}`)
+        .then((response) => {
+          setUserSnippets(response.data);
+        })
+        .catch((error) => {
+          console.error('Error fetching snippets:', error);
+          setMessage('Failed to fetch user snippets');
+        });
+    }
+  }, [userId]);
+
+  const fetchSnippetById = async (snippetId) => {
+    try {
+      const response = await axios.get(`http://localhost:4010/virtual-lab/read-snippet/${snippetId}`);
+      if (response.status === 200) {
+        const { htmlCode, cssCode, jsCode, codeName } = response.data;
+        setHtmlCode(htmlCode || '');
+        setCssCode(cssCode || '');
+        setJsCode(jsCode || '');
+        setCodeName(codeName || '');
+        setCurrentSnippetId(snippetId);
+        setMessage('Snippet loaded successfully!');
+      } else {
+        setMessage('Failed to load snippet.');
+      }
+    } catch (error) {
+      console.error('Error fetching snippet:', error);
+      setMessage('Error loading snippet.');
+    }
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  const saveToBackend = async () => {
+    if (!userId) {
+      setMessage('User is not logged in!');
+      return;
+    }
+    if (!codeName.trim()) {
+      setMessage('File name cannot be empty!');
+      return;
+    }
+    try {
+      const url = currentSnippetId
+        ? `http://localhost:4010/virtual-lab/update-snippet/${currentSnippetId}`
+        : 'http://localhost:4010/virtual-lab/save-snippet';
+      const method = currentSnippetId ? 'put' : 'post';
+      const response = await axios({
+        method,
+        url,
+        data: {
+          user_id: userId,
+          htmlCode,
+          cssCode,
+          jsCode,
+          codeName,
+        },
+      });
+      if (response.status === 200) {
+        if (!currentSnippetId) {
+          setCurrentSnippetId(response.data._id);
+        }
+        setMessage(currentSnippetId ? 'Snippet updated successfully!' : 'Code saved to server!');
+        const updatedSnippets = await axios.get(`http://localhost:4010/virtual-lab/get-user-snippet/${userId}`);
+        setUserSnippets(updatedSnippets.data);
+      } else {
+        setMessage('Failed to save code to server.');
+      }
+    } catch (error) {
+      setMessage('Error saving to server.');
+      console.error(error);
+    }
+    setShowPrompt(false);
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  const createNewSnippet = () => {
+    setHtmlCode('');
+    setCssCode('');
+    setJsCode('');
+    setCodeName('');
+    setCurrentSnippetId(null);
+  };
+
+  const handleEditorChange = (code, language) => {
+    if (language === 'html') {
+      setHtmlCode(code);
+    } else if (language === 'css') {
+      setCssCode(code);
+    } else if (language === 'javascript') {
+      setJsCode(code);
+    }
+  };
+
+  const generateOutput = () => `
+    <html>
+      <style>${cssCode}</style>
+      <body>${htmlCode}</body>
+      <script>${jsCode}</script>
+    </html>
+  `;
+
+  const deleteSnippet = async (snippetId) => {
+    try {
+      const response = await axios.delete(`http://localhost:4010/virtual-lab/delete-snippet/${snippetId}`);
+      if (response.status === 202) {
+        setMessage('Snippet deleted successfully!');
+        const updatedSnippets = await axios.get(`http://localhost:4010/virtual-lab/get-user-snippet/${userId}`);
+        setUserSnippets(updatedSnippets.data);
+      } else {
+        setMessage('Failed to delete snippet.');
+      }
+    } catch (error) {
+      setMessage('Error deleting snippet.');
+      console.error(error);
+    }
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  const detectHtmlErrors = (htmlCode) => {
+    try {
+      const document = parseFragment(htmlCode); // Parse the HTML as a fragment
+      const errors = [];
+  
+      // Helper function to traverse nodes recursively
+      const traverse = (node, parentTag) => {
+        if (node.tagName) {
+          // Check for invalid nesting
+          if (parentTag === 'p' && node.tagName === 'div') {
+            errors.push('Invalid nesting: <div> cannot be inside <p>.');
+          }
+  
+          // Check for missing attributes
+          if (node.tagName === 'img' && !node.attrs.some((attr) => attr.name === 'alt')) {
+            errors.push('Missing alt attribute on <img> tag.');
+          }
+  
+          // Detect improper tag closure by manually analyzing raw HTML
+          const openingTag = `<${node.tagName}`;
+          const closingTag = `</${node.tagName}>`;
+          if (
+            !htmlCode.includes(openingTag) ||
+            !htmlCode.includes(closingTag) ||
+            htmlCode.indexOf(openingTag) > htmlCode.indexOf(closingTag)
+          ) {
+            errors.push(`Unclosed or misplaced tag: <${node.tagName}>.`);
+          }
+        }
+  
+        // Recursively check child nodes
+        if (node.childNodes && node.childNodes.length > 0) {
+          node.childNodes.forEach((child) => traverse(child, node.tagName));
+        }
+      };
+  
+      // Start traversing from the parsed document's child nodes
+      document.childNodes.forEach((node) => traverse(node, null));
+  
+      // Ensure <html> and <body> tags are present for full documents
+      if (!/<html>/.test(htmlCode)) {
+        errors.push('Missing <html> root tag.');
+      }
+      if (!/<body>/.test(htmlCode)) {
+        errors.push('Missing <body> tag.');
+      }
+  
+      return errors.length > 0 ? errors : ['No structural errors detected.'];
+    } catch (error) {
+      return ['Error parsing HTML structure.'];
+    }
+  };
+
+  const validateHtml = () => {
+    const errors = detectHtmlErrors(htmlCode);
+    setHtmlErrors(errors);
+    if (errors.length > 0) {
+      setMessage(`HTML Errors: ${errors.join(', ')}`);
+    } else {
+      setMessage('No structural errors found!');
+    }
+    setTimeout(() => setMessage(''), 5000);
+  };
+
+  return (
+    <div className="virtual-lab-main-container">
+      <div className="virtual-lab-user-history">
+        <h3>Snippet History</h3>
+        {userSnippets.length > 0 ? (
+          <ul>
+            {userSnippets.map((snippet) => (
+              <li key={snippet._id} onClick={() => fetchSnippetById(snippet.id)}>
+                <div className="snippet-list-item">
+                  {snippet.codeName}
+                  <div
+                    className="delete-snippet"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteSnippet(snippet.id);
+                    }}
+                  >
+                    <MdDelete size={25} />
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No snippets found.</p>
+        )}
+      </div>
+      <div className="virtual-lab-container">
+        <div className="html-css-code-blocks">
+          <div className="editor-container">
+            <h3>HTML</h3>
+            <MonacoEditor
+              height="300px"
+              language="html"
+              value={htmlCode}
+              onChange={(newValue) => handleEditorChange(newValue, 'html')}
+              options={editorOptions}
+            />
+          </div>
+          <div className="editor-container">
+            <h3>CSS</h3>
+            <MonacoEditor
+              height="300px"
+              language="css"
+              value={cssCode}
+              onChange={(newValue) => handleEditorChange(newValue, 'css')}
+              options={editorOptions}
+            />
+          </div>
+          <div className="editor-container">
+            <h3>JavaScript</h3>
+            <MonacoEditor
+              height="300px"
+              language="javascript"
+              value={jsCode}
+              onChange={(newValue) => handleEditorChange(newValue, 'javascript')}
+              options={editorOptions}
+            />
+          </div>
+        </div>
+
+        <div className="snippet-actions">
+          <button onClick={() => setShowPrompt(true)} className="save-button">
+            {currentSnippetId ? 'Update Snippet' : 'Save to Server'}
+          </button>
+          <button onClick={createNewSnippet} className="new-snippet-button">
+            New Snippet
+          </button>
+          <button onClick={validateHtml} className="validate-button">
+            Validate HTML
+          </button>
+        </div>
+
+        {showPrompt && (
+          <div className="save-prompt">
+            <input
+              type="text"
+              placeholder="Enter file name"
+              value={codeName}
+              onChange={(e) => setCodeName(e.target.value)}
+              className="code-name-input"
+            />
+            <button onClick={saveToBackend} className="confirm-save-button">
+              Confirm Save
+            </button>
+            <button onClick={() => setShowPrompt(false)} className="cancel-save-button">
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {message && <p className="message">{message}</p>}
+
+        <div className="output-container">
+          <h3>Output</h3>
+          <iframe
+            title="Live Output"
+            srcDoc={generateOutput()}
+            width="100%"
+            height="300px"
+          ></iframe>
+        </div>
+
+        <div className="html-errors">
+          <h3>Validation Errors:</h3>
+          {htmlErrors.length > 0 ? (
+            <ul>
+              {htmlErrors.map((error, index) => (
+                <li key={index}>{error}</li>
+              ))}
+            </ul>
+          ) : (
+            <p>No errors found.</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default VirtualLab;

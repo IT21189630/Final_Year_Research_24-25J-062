@@ -19,6 +19,7 @@ import StudentDashboard from "./pages/dashboard-student/StudentDashboard";
 // m3 page imports
 
 // m4 page imports
+import VirtualLab from "./pages/virtual-coding-lab/VirtualLab";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         <Route path="/student/dashboard" element={<StudentProtectedRoute />}>
           <Route path="/student/dashboard/" element={<StudentDashboard />}>
             <Route path="/student/dashboard/" element={<MarkupAdmin />} />
+            <Route path="/student/dashboard/virtuallab" element={<VirtualLab />} />
           </Route>
         </Route>
       </Routes>

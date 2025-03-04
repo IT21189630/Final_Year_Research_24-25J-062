@@ -1,0 +1,93 @@
+.virtual-lab-main-container{
+    width: 100%;
+    display: flex;
+    padding-left: 10px;
+    padding-right: 10px;
+    box-sizing: border-box;
+}
+
+.virtual-lab-user-history{
+    width: 160px;
+}
+
+.virtual-lab-container{
+    width: 90%;
+}
+
+.html-css-code-blocks{
+    display: flex;
+    width: 100%;
+    height: 400px;
+    box-sizing: border-box;
+    justify-content: center;
+    gap: 40px;
+}
+
+.editor-container{
+   width: 30%;
+    height: 100%;
+    background-color: aquamarine;
+}
+
+.monaco-editor .no-user-select .showUnused .showDeprecated .vs{
+    width: 320px;
+}
+
+.virtual-lab-user-history li{
+    cursor: pointer;
+}
+
+.snippet-list-item {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 10px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.snippet-list-item:hover {
+    background-color: #f0f0f0; 
+    transform: scale(1.02); 
+    cursor: pointer; 
+}
+
+ul {
+    padding: 0;
+    margin: 0;
+    list-style: none; 
+}
+
+.new-snippet-button,
+.validate-button,
+.save-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50; 
+    color: #fff; 
+    border: none; 
+    border-radius: 5px; 
+    font-size: 16px; 
+    font-weight: bold; 
+    text-align: center;
+    cursor: pointer; 
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    transition: background-color 0.3s ease, transform 0.2s ease; 
+    margin: 10px;
+}
+
+.new-snippet-button:hover,
+.validate-button:hover,
+.save-button:hover {
+    background-color: #45a049; 
+    transform: translateY(-2px); 
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); 
+}
+
+.new-snippet-button:active,
+.validate-button:active,
+.save-button:active {
+    background-color: #3e8e41; 
+    transform: translateY(0); 
+    box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1); 
+}
