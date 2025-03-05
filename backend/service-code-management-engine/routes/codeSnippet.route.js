@@ -7,7 +7,8 @@ const{
     displaySnippet,
     updateSnippet,
     getSnippetsByUserId,
-    deleteSnippet
+    deleteSnippet,
+    addCollaborator
 } = require("../controllerls/codeSnippet.controller");
 
 router.post('/save-snippet', saveSnippet);
@@ -16,5 +17,6 @@ router.get('/display-snippets', displaySnippet);
 router.put('/update-snippet/:id', updateSnippet);
 router.get('/get-user-snippet/:user_id', getSnippetsByUserId);
 router.delete('/delete-snippet/:id', deleteSnippet);
+router.post('/:snippetId/add-collaborator', addCollaborator);
 
 module.exports = router;

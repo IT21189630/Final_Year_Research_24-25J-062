@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import { parseFragment } from 'parse5'; // Corrected for handling HTML fragments
 import './virtualLab.css';
 import { MdDelete } from "react-icons/md";
+import { io } from 'socket.io-client';
+import { debounce } from 'lodash';
 
 function VirtualLab() {
   const [htmlCode, setHtmlCode] = useState('');
@@ -16,6 +18,17 @@ function VirtualLab() {
   const [userSnippets, setUserSnippets] = useState([]);
   const [currentSnippetId, setCurrentSnippetId] = useState(null);
   const [htmlErrors, setHtmlErrors] = useState([]);
+  const [socket, setSocket] = useState(null);
+  const [collaboratorEmail, setCollaboratorEmail] = useState('');
+  const [showCollaboratorInput, setShowCollaboratorInput] = useState(false);
+
+  const emitCodeUpdateRef = useRef(
+    debounce((roomId, type, content) => {
+      if (socket && roomId) {
+        socket.emit('codeUpdate', { roomId, type, content });
+      }
+    }, 500)
+  );
 
   const editorOptions = {
     selectOnLineNumbers: true,
@@ -24,6 +37,58 @@ function VirtualLab() {
 
   const user = useSelector((state) => state.user);
   const userId = user?.user_id;
+
+  // WebSocket Initialization
+  useEffect(() => {
+    const newSocket = io('http://localhost:4010');
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+
+    // Handle WebSocket events
+    useEffect(() => {
+      if (!socket) return;
+  
+      const handleInitialCode = ({ htmlCode: initialHtml, cssCode: initialCss, jsCode: initialJs }) => {
+        setHtmlCode(initialHtml || '');
+        setCssCode(initialCss || '');
+        setJsCode(initialJs || '');
+      };
+  
+      const handleCodeUpdate = ({ type, content }) => {
+        switch (type) {
+          case 'htmlCode':
+            setHtmlCode(content);
+            break;
+          case 'cssCode':
+            setCssCode(content);
+            break;
+          case 'jsCode':
+            setJsCode(content);
+            break;
+          default:
+            break;
+        }
+      };
+  
+      socket.on('initialCode', handleInitialCode);
+      socket.on('codeUpdate', handleCodeUpdate);
+  
+      return () => {
+        socket.off('initialCode', handleInitialCode);
+        socket.off('codeUpdate', handleCodeUpdate);
+      };
+    }, [socket]);
+
+      // Join room when snippet changes
+  useEffect(() => {
+    if (socket && currentSnippetId) {
+      socket.emit('joinRoom', currentSnippetId);
+    }
+  }, [currentSnippetId, socket]);
 
   useEffect(() => {
     const savedHtml = localStorage.getItem('htmlCode') || '';
@@ -81,6 +146,8 @@ function VirtualLab() {
     setTimeout(() => setMessage(''), 3000);
   };
 
+  
+
   const saveToBackend = async () => {
     if (!userId) {
       setMessage('User is not logged in!');
@@ -132,15 +199,41 @@ function VirtualLab() {
     setCurrentSnippetId(null);
   };
 
-  const handleEditorChange = (code, language) => {
-    if (language === 'html') {
-      setHtmlCode(code);
-    } else if (language === 'css') {
-      setCssCode(code);
-    } else if (language === 'javascript') {
-      setJsCode(code);
-    }
-  };
+  // const handleEditorChange = (code, language) => {
+  //   if (language === 'html') {
+  //     setHtmlCode(code);
+  //   } else if (language === 'css') {
+  //     setCssCode(code);
+  //   } else if (language === 'javascript') {
+  //     setJsCode(code);
+  //   }
+  // };
+
+
+    // Modified handleEditorChange with WebSocket emission
+    const handleEditorChange = (newValue, language) => {
+      let type;
+      switch (language) {
+        case 'html':
+          type = 'htmlCode';
+          setHtmlCode(newValue);
+          break;
+        case 'css':
+          type = 'cssCode';
+          setCssCode(newValue);
+          break;
+        case 'javascript':
+          type = 'jsCode';
+          setJsCode(newValue);
+          break;
+        default:
+          return;
+      }
+  
+      if (currentSnippetId) {
+        emitCodeUpdateRef.current(currentSnippetId, type, newValue);
+      }
+    };
 
   const generateOutput = () => `
     <html>
@@ -157,6 +250,9 @@ function VirtualLab() {
         setMessage('Snippet deleted successfully!');
         const updatedSnippets = await axios.get(`http://localhost:4010/virtual-lab/get-user-snippet/${userId}`);
         setUserSnippets(updatedSnippets.data);
+
+         // Update state by filtering out the deleted snippet
+        // setUserSnippets((prevSnippets) => prevSnippets.filter((s) => s.id !== snippetId));
       } else {
         setMessage('Failed to delete snippet.');
       }
@@ -231,6 +327,34 @@ function VirtualLab() {
     setTimeout(() => setMessage(''), 5000);
   };
 
+  // Add this function to handle collaborator addition
+const handleAddCollaborator = async () => {
+  if (!currentSnippetId) {
+    setMessage('No snippet selected');
+    return;
+  }
+  if (!collaboratorEmail.trim()) {
+    setMessage('Please enter a valid email address');
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      `http://localhost:4010/virtual-lab/${currentSnippetId}/add-collaborator`,
+      { email: collaboratorEmail }
+    );
+
+    if (response.status === 200) {
+      setMessage('Collaborator added successfully!');
+      setCollaboratorEmail('');
+      setShowCollaboratorInput(false);
+    }
+  } catch (error) {
+    setMessage(error.response?.data?.message || 'Error adding collaborator');
+  }
+  setTimeout(() => setMessage(''), 3000);
+};
+
   return (
     <div className="virtual-lab-main-container">
       <div className="virtual-lab-user-history">
@@ -302,6 +426,31 @@ function VirtualLab() {
           <button onClick={validateHtml} className="validate-button">
             Validate HTML
           </button>
+          {currentSnippetId && (
+            <button 
+              onClick={() => setShowCollaboratorInput(!showCollaboratorInput)}
+              className="collaborator-button"
+            >
+              {showCollaboratorInput ? 'Cancel' : 'Add Collaborator'}
+            </button>
+          )}
+          {showCollaboratorInput && currentSnippetId && (
+            <div className="collaborator-input">
+              <input
+                type="email"
+                placeholder="Enter collaborator's email"
+                value={collaboratorEmail}
+                onChange={(e) => setCollaboratorEmail(e.target.value)}
+                className="email-input"
+              />
+              <button 
+                onClick={handleAddCollaborator}
+                className="confirm-collaborator-button"
+              >
+                Add
+              </button>
+            </div>
+          )}
         </div>
 
         {showPrompt && (

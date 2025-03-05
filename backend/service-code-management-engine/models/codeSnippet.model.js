@@ -21,7 +21,8 @@ const SnippetSchema = mongoose.Schema(
     codeName: {
         type: String,
         required: true
-    }
+    },
+    allowedUsers: [{ type: String }],
     
 });
 

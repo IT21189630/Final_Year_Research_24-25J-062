@@ -1,5 +1,8 @@
 const codeSnippetModel = require('../models/codeSnippet.model');
 const asyncHandler = require('express-async-handler');
+const axios = require("axios");
+
+const USER_SERVICE_URL = "http://localhost:4000/gamified-learning/api/user-management/auth";
 
 // create a product
 const saveSnippet = asyncHandler(async (req, res) => {
@@ -10,7 +13,8 @@ const saveSnippet = asyncHandler(async (req, res) => {
       htmlCode,
       cssCode,
       jsCode,
-      codeName
+      codeName,
+      allowedUsers: [user_id] 
     });
   
     if (response) {
@@ -103,7 +107,34 @@ const deleteSnippet = asyncHandler(async(req,res)=>{
     else{
         res.status(400).json({error: 'record deleted'})
     }
-})
+});
+
+// Add a collaborator to a snippet
+const addCollaborator = asyncHandler(async (req, res) => {
+    const { snippetId } = req.params;
+    const { email } = req.body;
+
+    try {
+        // Check if the user exists via User Service
+        const userResponse = await axios.get(`${USER_SERVICE_URL}/users/email/${email}`);
+        if (!userResponse.data) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const snippet = await codeSnippetModel.findById(snippetId);
+        if (!snippet) return res.status(404).json({ message: "Snippet not found" });
+
+        if (!snippet.allowedUsers.includes(email)) {
+            snippet.allowedUsers.push(email);
+            await snippet.save();
+        }
+
+        res.status(200).json({ message: "User added successfully!" });
+    } catch (error) {
+        console.error("Error adding collaborator:", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+});
 
 
 
@@ -113,5 +144,6 @@ module.exports = {
     displaySnippet,
     updateSnippet,
     getSnippetsByUserId,
-    deleteSnippet
+    deleteSnippet,
+    addCollaborator
 };

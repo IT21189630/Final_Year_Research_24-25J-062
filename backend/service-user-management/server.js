@@ -35,6 +35,10 @@ app.use(
   "/gamified-learning/api/user-management/auth",
   require("./routes/auth-register.routes")
 );
+app.use(
+  "/gamified-learning/api/user-management/auth",
+  require("./routes/auth-user.routes")
+);
 
 app.use(verifyJWT);
 app.use(errorHandler);
