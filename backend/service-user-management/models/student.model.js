@@ -29,6 +29,11 @@ const studentSchema = mongoose.Schema(
       default: Student,
     },
 
+    collaboratedSnippets: [{
+      type: String, // Store snippet IDs as strings
+      default: []
+    }],
+
     refresh_token: String,
   },
   { timestamps: true }

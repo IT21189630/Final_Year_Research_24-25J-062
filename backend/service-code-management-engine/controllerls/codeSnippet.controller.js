@@ -113,28 +113,46 @@ const deleteSnippet = asyncHandler(async(req,res)=>{
 const addCollaborator = asyncHandler(async (req, res) => {
     const { snippetId } = req.params;
     const { email } = req.body;
-
+  
     try {
-        // Check if the user exists via User Service
-        const userResponse = await axios.get(`${USER_SERVICE_URL}/users/email/${email}`);
-        if (!userResponse.data) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        const snippet = await codeSnippetModel.findById(snippetId);
-        if (!snippet) return res.status(404).json({ message: "Snippet not found" });
-
-        if (!snippet.allowedUsers.includes(email)) {
-            snippet.allowedUsers.push(email);
-            await snippet.save();
-        }
-
-        res.status(200).json({ message: "User added successfully!" });
+      // 1. Get user details from User Service
+      const userResponse = await axios.get(`${USER_SERVICE_URL}/users/email/${email}`);
+      if (!userResponse.data) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const { user_id: collaboratorId } = userResponse.data;
+  
+      // 2. Check and update code snippet
+      const snippet = await codeSnippetModel.findById(snippetId);
+      if (!snippet) return res.status(404).json({ message: "Snippet not found" });
+  
+      // 3. Update allowed users if needed
+      if (!snippet.allowedUsers.includes(email)) {
+        snippet.allowedUsers.push(email);
+        await snippet.save();
+      }
+  
+      // 4. Update user's collaborated snippets
+      await axios.put(
+        `${USER_SERVICE_URL}/users/${collaboratorId}/add-snippet`,
+        { snippetId }
+      );
+  
+      res.status(200).json({ 
+        message: "Collaborator added successfully!",
+        collaboratorId
+      });
     } catch (error) {
-        console.error("Error adding collaborator:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+      console.error("Error adding collaborator:", error);
+      
+      // Handle specific error cases
+      const status = error.response?.status || 500;
+      const message = error.response?.data?.message || "Internal Server Error";
+      
+      res.status(status).json({ message });
     }
-});
+  });
 
 
 

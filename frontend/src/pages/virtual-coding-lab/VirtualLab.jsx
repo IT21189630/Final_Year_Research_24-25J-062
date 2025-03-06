@@ -111,12 +111,41 @@ function VirtualLab() {
     localStorage.setItem('jsCode', jsCode);
   }, [jsCode]);
 
+  // useEffect(() => {
+  //   if (userId) {
+  //     axios
+  //       .get(`http://localhost:4010/virtual-lab/get-user-snippet/${userId}`)
+  //       .then((response) => {
+  //         setUserSnippets(response.data);
+  //       })
+  //       .catch((error) => {
+  //         console.error('Error fetching snippets:', error);
+  //         setMessage('Failed to fetch user snippets');
+  //       });
+  //   }
+  // }, [userId]);
+
   useEffect(() => {
     if (userId) {
-      axios
-        .get(`http://localhost:4010/virtual-lab/get-user-snippet/${userId}`)
-        .then((response) => {
-          setUserSnippets(response.data);
+      // Create an array to hold both API calls
+      const promises = [
+        axios.get(`http://localhost:4010/virtual-lab/get-user-snippet/${userId}`),
+        axios.get(`http://localhost:4000/gamified-learning/api/user-management/auth/${userId}/collaborated-snippets`)
+      ];
+      
+      // Execute both API calls in parallel
+      Promise.all(promises)
+        .then(([userSnippetsResponse, collaboratedSnippetsResponse]) => {
+          // Combine both sets of snippets
+          const combinedSnippets = [
+            ...userSnippetsResponse.data,
+            ...collaboratedSnippetsResponse.data
+          ];
+
+          console.log('Combined snippets:', combinedSnippets);
+          
+          // Set the combined result
+          setUserSnippets(combinedSnippets);
         })
         .catch((error) => {
           console.error('Error fetching snippets:', error);
@@ -124,6 +153,8 @@ function VirtualLab() {
         });
     }
   }, [userId]);
+
+
 
   const fetchSnippetById = async (snippetId) => {
     try {
