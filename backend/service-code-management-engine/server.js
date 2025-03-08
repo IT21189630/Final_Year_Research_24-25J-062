@@ -42,20 +42,19 @@ io.on("connection", (socket) => {
 
   // User joins a coding lab using the Code Snippet ID as roomId
   socket.on("joinRoom", async (roomId) => {
+    console.log(`📌 User ${socket.id} attempting to join room: ${roomId}`);
+  
     try {
-      // Fetch code snippet from MongoDB
       const snippet = await CodeSnippet.findById(roomId);
       if (!snippet) {
         console.log(`🚨 Snippet not found: ${roomId}`);
         socket.emit("error", { message: "Snippet not found!" });
         return;
       }
-
-      // Join the socket room
+  
       socket.join(roomId);
-      console.log(`📌 User ${socket.id} joined lab: ${roomId}`);
-
-      // Send initial code to the user
+      console.log(`✅ User ${socket.id} successfully joined room: ${roomId}`);
+  
       socket.emit("initialCode", {
         htmlCode: snippet.htmlCode || "",
         cssCode: snippet.cssCode || "",
@@ -66,26 +65,33 @@ io.on("connection", (socket) => {
       socket.emit("error", { message: "Server error. Try again later!" });
     }
   });
+  
 
   // Handle real-time code updates
   socket.on("codeUpdate", async ({ roomId, type, content }) => {
-    try {
-      const validTypes = ["htmlCode", "cssCode", "jsCode"];
-      if (!validTypes.includes(type)) {
-        console.log(`🚨 Invalid update type: ${type}`);
-        return;
-      }
+  console.log("🔥 Received code update event:", { roomId, type, content });
 
-      // Update MongoDB document only for the specified field
-      await CodeSnippet.findByIdAndUpdate(roomId, { $set: { [type]: content } });
+  const validTypes = ["htmlCode", "cssCode", "jsCode"];
+  if (!validTypes.includes(type)) {
+    console.log(`🚨 Invalid update type: ${type}`);
+    return;
+  }
 
-      // Broadcast update to other users in the same room
-      socket.to(roomId).emit("codeUpdate", { type, content });
-    } catch (error) {
-      console.error("❌ Error updating code snippet:", error);
-      socket.emit("error", { message: "Failed to update code!" });
-    }
-  });
+  const snippet = await CodeSnippet.findById(roomId);
+  console.log("🗄️ Snippet found?", snippet ? "✅ Yes" : "❌ No");
+
+  if (!snippet) {
+    socket.emit("error", { message: "Snippet not found!" });
+    return;
+  }
+
+  await CodeSnippet.findByIdAndUpdate(roomId, { $set: { [type]: content } });
+
+  console.log(`✅ MongoDB Updated: ${type} -`, content);
+  socket.to(roomId).emit("codeUpdate", { type, content });
+  console.log(`🔄 Broadcasted update to room: ${roomId}`);
+});
+  
 
   socket.on("disconnect", () => {
     console.log(`❌ User disconnected: ${socket.id}`);

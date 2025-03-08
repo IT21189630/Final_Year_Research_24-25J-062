@@ -154,6 +154,29 @@ const addCollaborator = asyncHandler(async (req, res) => {
     }
   });
 
+// Get snippet ID and codeName by snippet ID
+const getSnippetById = asyncHandler(async (req, res) => {
+    const { snippet_id } = req.params;
+
+    try {
+        // Retrieve _id and codeName fields
+        const snippet = await codeSnippetModel.findById(snippet_id, '_id codeName');
+
+        if (snippet) {
+            res.status(200).json({
+                id: snippet._id,
+                codeName: snippet.codeName,
+            });
+        } else {
+            res.status(404).json({ message: 'Snippet not found' });
+        }
+    } catch (error) {
+        console.error('Error fetching snippet:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+
 
 
 module.exports = {
@@ -163,5 +186,6 @@ module.exports = {
     updateSnippet,
     getSnippetsByUserId,
     deleteSnippet,
-    addCollaborator
+    addCollaborator,
+    getSnippetById
 };

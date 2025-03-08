@@ -126,33 +126,48 @@ function VirtualLab() {
   // }, [userId]);
 
   useEffect(() => {
-    if (userId) {
-      // Create an array to hold both API calls
-      const promises = [
-        axios.get(`http://localhost:4010/virtual-lab/get-user-snippet/${userId}`),
-        axios.get(`http://localhost:4000/gamified-learning/api/user-management/auth/${userId}/collaborated-snippets`)
-      ];
-      
-      // Execute both API calls in parallel
-      Promise.all(promises)
-        .then(([userSnippetsResponse, collaboratedSnippetsResponse]) => {
-          // Combine both sets of snippets
-          const combinedSnippets = [
-            ...userSnippetsResponse.data,
-            ...collaboratedSnippetsResponse.data
-          ];
+    if (!userId) return;
 
-          console.log('Combined snippets:', combinedSnippets);
-          
-          // Set the combined result
-          setUserSnippets(combinedSnippets);
-        })
-        .catch((error) => {
-          console.error('Error fetching snippets:', error);
-          setMessage('Failed to fetch user snippets');
-        });
-    }
-  }, [userId]);
+    // Fetch user snippets and collaborated snippet IDs in parallel
+    const fetchSnippets = async () => {
+        try {
+            const [userSnippetsResponse, collaboratedSnippetIdsResponse] = await Promise.all([
+                axios.get(`http://localhost:4010/virtual-lab/get-user-snippet/${userId}`),
+                axios.get(`http://localhost:4000/gamified-learning/api/user-management/auth/${userId}/collaborated-snippets`)
+            ]);
+
+            // User snippets already have { id, codeName }
+            const userSnippets = userSnippetsResponse.data;
+
+            // Collaborated snippet IDs
+            const collaboratedSnippetIds = collaboratedSnippetIdsResponse.data || [];
+
+            // Fetch details of each collaborated snippet
+            let collaboratedSnippets = [];
+            if (collaboratedSnippetIds.length > 0) {
+                const snippetDetailsRequests = collaboratedSnippetIds.map(id =>
+                    axios.get(`http://localhost:4010/virtual-lab/get-snippet/${id}`)
+                );
+
+                const snippetDetailsResponses = await Promise.all(snippetDetailsRequests);
+                collaboratedSnippets = snippetDetailsResponses.map(res => res.data);
+            }
+
+            // Merge both sets of snippets
+            const combinedSnippets = [...userSnippets, ...collaboratedSnippets];
+
+            console.log('Final Combined Snippets:', combinedSnippets);
+
+            setUserSnippets(combinedSnippets);
+        } catch (error) {
+            console.error('Error fetching snippets:', error);
+            setMessage('Failed to fetch user snippets');
+        }
+    };
+
+    fetchSnippets();
+}, [userId]);
+
 
 
 
@@ -265,6 +280,12 @@ function VirtualLab() {
         emitCodeUpdateRef.current(currentSnippetId, type, newValue);
       }
     };
+
+    const emitCodeUpdate = (roomId, type, content) => {
+      console.log(`📤 Emitting codeUpdate: Room - ${roomId}, Type - ${type}, Content -`, content);
+      socket.emit("codeUpdate", { roomId, type, content });
+    };
+    emitCodeUpdateRef.current = emitCodeUpdate;
 
   const generateOutput = () => `
     <html>
