@@ -21,6 +21,7 @@ function VirtualLab() {
   const [socket, setSocket] = useState(null);
   const [collaboratorEmail, setCollaboratorEmail] = useState('');
   const [showCollaboratorInput, setShowCollaboratorInput] = useState(false);
+  const [jsErrors, setJsErrors] = useState([]);
 
   const emitCodeUpdateRef = useRef(
     debounce((roomId, type, content) => {
@@ -407,6 +408,42 @@ const handleAddCollaborator = async () => {
   setTimeout(() => setMessage(''), 3000);
 };
 
+
+// Add this validation function
+const validateJs = async () => {
+  try {
+    if (!jsCode.trim()) {
+      setMessage('JavaScript code cannot be empty!');
+      return;
+    }
+
+    const response = await axios.post('http://localhost:5000/analyze', {
+      code: jsCode
+    });
+
+    console.log('Full API response:', response); 
+    console.log('Response data:', response.data); 
+
+    if (response.data.error) {
+      setJsErrors([response.data.error]);
+    } else {
+      const { predicted_error, confidence, probabilities } = response.data;
+      const formattedError = `${predicted_error} (${(confidence * 100).toFixed(1)}% confidence)`;
+      const detailedErrors = Object.entries(probabilities).map(([errorType, prob]) => 
+        `${errorType}: ${(prob * 100).toFixed(1)}%`
+      );
+      
+      setJsErrors([formattedError, ...detailedErrors]);
+    }
+    
+    setMessage('JavaScript analysis completed!');
+  } catch (error) {
+    setJsErrors(['Error analyzing JavaScript code']);
+    console.error('JS validation error:', error);
+  }
+  setTimeout(() => setMessage(''), 5000);
+};
+
   return (
     <div className="virtual-lab-main-container">
       <div className="virtual-lab-user-history">
@@ -477,6 +514,9 @@ const handleAddCollaborator = async () => {
           </button>
           <button onClick={validateHtml} className="validate-button">
             Validate HTML
+          </button>
+          <button onClick={validateJs} className="validate-button">
+            Analyze JavaScript
           </button>
           {currentSnippetId && (
             <button 
