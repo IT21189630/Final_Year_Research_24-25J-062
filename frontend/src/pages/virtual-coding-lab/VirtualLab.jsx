@@ -447,9 +447,9 @@ const validateJs = async () => {
   return (
     <div className="virtual-lab-main-container">
       <div className="virtual-lab-user-history">
-        <h3>Snippet History</h3>
+        <h3 className='lab-history-title'>Your Labs</h3>
         {userSnippets.length > 0 ? (
-          <ul>
+          <ul className='snippet-list'>
             {userSnippets.map((snippet) => (
               <li key={snippet._id} onClick={() => fetchSnippetById(snippet.id)}>
                 <div className="snippet-list-item">
@@ -476,7 +476,8 @@ const validateJs = async () => {
           <div className="editor-container">
             <h3>HTML</h3>
             <MonacoEditor
-              height="300px"
+              height="200px"
+              width="320px"
               language="html"
               value={htmlCode}
               onChange={(newValue) => handleEditorChange(newValue, 'html')}
@@ -486,7 +487,8 @@ const validateJs = async () => {
           <div className="editor-container">
             <h3>CSS</h3>
             <MonacoEditor
-              height="300px"
+              height="200px"
+              width="320px"
               language="css"
               value={cssCode}
               onChange={(newValue) => handleEditorChange(newValue, 'css')}
@@ -496,7 +498,8 @@ const validateJs = async () => {
           <div className="editor-container">
             <h3>JavaScript</h3>
             <MonacoEditor
-              height="300px"
+              height="200px"
+              width="320px"
               language="javascript"
               value={jsCode}
               onChange={(newValue) => handleEditorChange(newValue, 'javascript')}
