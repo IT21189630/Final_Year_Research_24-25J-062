@@ -32,6 +32,8 @@ export const updateCourseProgress = async (
       }
     }
   } catch (error) {
+    console.log(error);
+
     toast.error("Performance record creation failed!");
   }
 };
