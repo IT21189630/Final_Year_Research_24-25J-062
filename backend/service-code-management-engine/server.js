@@ -24,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(errorHandler);
 app.use("/virtual-lab", require("./routes/codeSnippet.route"));
+app.use("/error-log", require("./routes/codeError.route"));
 
 // Create an HTTP server and wrap Express
 const server = http.createServer(app);
