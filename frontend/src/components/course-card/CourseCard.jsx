@@ -7,7 +7,8 @@ import { toast } from "react-hot-toast";
 import "./course-card.css";
 
 function CourseCard(props) {
-  const { name, visibility, image, index, description, price, _id } = props;
+  const { name, prerequisites, image, index, description, price, _id, flag } =
+    props;
 
   const { user_id } = useSelector((state) => state.user);
 
@@ -29,9 +30,11 @@ function CourseCard(props) {
   return (
     <div className="course-card-container">
       <div className="ribbon">
-        <span>Level {index + 1}</span>
+        <span>
+          Level {index + 1} {parseInt(prerequisites)}
+        </span>
       </div>
-      {!visibility && (
+      {flag < parseInt(prerequisites) && (
         <div className="course-lock-scrn">
           <img src={Lock} alt="lock-icon" className="lock-icon" />
           <span className="lock-scrn-text">Locked!</span>

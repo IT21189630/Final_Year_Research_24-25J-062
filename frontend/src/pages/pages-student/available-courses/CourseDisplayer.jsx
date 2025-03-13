@@ -1,4 +1,5 @@
 import React, { Component, useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 import "./course-displayer.styles.css";
 import "slick-carousel/slick/slick.css";
@@ -12,6 +13,16 @@ import LoadingScreen from "../../../components/loading-screen/LoadingScreen";
 import axiosInstanceLessonMangement from "../../../axios/axiosInstanceLessonMangement";
 
 function CourseDisplayer() {
+  const { current_level } = useSelector((state) => state.progress);
+
+  let flag = 0;
+
+  if (current_level < 20) {
+    flag = 1;
+  } else if (current_level >= 20) {
+    flag = 2;
+  }
+
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -48,7 +59,7 @@ function CourseDisplayer() {
 
   function CustomSlide(props) {
     const { index, course } = props;
-    return <CourseCard {...course} index={index} />;
+    return <CourseCard {...course} index={index} flag={flag} />;
   }
 
   const fetchCourses = async () => {
