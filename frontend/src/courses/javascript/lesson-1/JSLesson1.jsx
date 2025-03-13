@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useCodeMirror } from "@uiw/react-codemirror";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { javascript } from "@codemirror/lang-javascript";
+import axios from "axios";
 import SpaceBackground from "../../../images/js-lessons/space-station-bg.png";
 import AstronautGuide from "../../../images/js-lessons/js-motive-image.png";
 import Timer from "../../../components/timer/Timer";
@@ -34,6 +35,10 @@ function JSLesson1() {
   const [startAttempt, setStartAttempt] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const editorRef = useRef();
+
+  // const API_BASE_URL = "http://localhost:4003/gamified-learning/api/ai-integration";
+  // const userId = "demoUser"; // Use demo user ID for now
+  // const lessonId = "lesson01";
 
   const useHintSystem = () => {
     if (hintCounter > 0) {
@@ -75,6 +80,52 @@ function JSLesson1() {
       setAttemptCounter((prev) => prev - 1);
     }
   };
+
+  // const validateAnswer = async (consumedTime) => {
+  //   try {
+  //     const response = await axios.post(`${API_BASE_URL}/validate-code`, {
+  //       lessonId,
+  //       userId,
+  //       code: jsInput,
+  //     });
+
+  //     if (response.data.isValid) {
+  //       toast.success(response.data.feedback || "Mission accomplished!");
+  //       setActivate(false);
+
+  //       let score = lessonPerformanceScoreCalculator(maximumMargins, {
+  //         usedHints: hints.length - hintCounter,
+  //         consumedTime,
+  //         usedAttempts: 5 - attemptCounter,
+  //       });
+  //       setPerformanceScore(score);
+  //       await updatePerformance(score, consumedTime); // Update performance in the backend
+  //       setShowModal(true);
+  //     } else {
+  //       toast.error(response.data.feedback || "Try again, Space Cadet!");
+  //       setAttemptCounter((prev) => prev - 1);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error validating answer:", error);
+  //     toast.error("Error validating code. Please try again.");
+  //   }
+  // };
+
+  // const updatePerformance = async (score, consumedTime) => {
+  //   try {
+  //     await axios.post(`${API_BASE_URL}/update-performance`, {
+  //       userId,
+  //       lessonId,
+  //       code: jsInput,
+  //       score,
+  //       completionTime: consumedTime,
+  //       hintsUsed: hints.length - hintCounter,
+  //       attempts: 5 - attemptCounter,
+  //     });
+  //   } catch (error) {
+  //     console.error("Error updating performance:", error);
+  //   }
+  // };
 
   const validateJS = () => {
     let jsContent = jsInput.trim();
