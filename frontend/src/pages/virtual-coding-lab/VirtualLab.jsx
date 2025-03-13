@@ -7,6 +7,8 @@ import './virtualLab.css';
 import { MdDelete } from "react-icons/md";
 import { io } from 'socket.io-client';
 import { debounce } from 'lodash';
+import EditorComponent from './editorComponent'; // Add this import
+
 
 function VirtualLab() {
   const [htmlCode, setHtmlCode] = useState('');
@@ -444,6 +446,58 @@ const validateJs = async () => {
   setTimeout(() => setMessage(''), 5000);
 };
 
+// In VirtualLab component
+const containerRef = useRef(null);
+const [containerHeight, setContainerHeight] = useState(0);
+
+useEffect(() => {
+  if (!containerRef.current) return;
+
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (let entry of entries) {
+      setContainerHeight(entry.contentRect.height);
+    }
+  });
+
+  resizeObserver.observe(containerRef.current);
+  return () => resizeObserver.disconnect();
+}, []);
+
+const [expandedStates, setExpandedStates] = useState({
+  html: true,
+  css: true,
+  js: true
+});
+
+const [editorHeights, setEditorHeights] = useState({
+  html: 180,
+  css: 180,
+  js: 180
+});
+
+// Add this effect to calculate heights
+useEffect(() => {
+  const totalHeight = 540; // Total height for all editors
+  const expandedCount = Object.values(expandedStates).filter(Boolean).length;
+  const baseHeight = expandedCount > 0 ? totalHeight / expandedCount : 0;
+
+  const newHeights = {
+    html: expandedStates.html ? baseHeight : 40, // 40px for collapsed title bar
+    css: expandedStates.css ? baseHeight : 40,
+    js: expandedStates.js ? baseHeight : 40
+  };
+
+  setEditorHeights(newHeights);
+}, [expandedStates]);
+
+// Add this state update handler
+const handleExpandedState = (editor, isExpanded) => {
+  setExpandedStates(prev => ({
+    ...prev,
+    [editor]: isExpanded
+  }));
+};
+
   return (
     <div className="virtual-lab-main-container">
       <div className="virtual-lab-user-history">
@@ -472,12 +526,22 @@ const validateJs = async () => {
         )}
       </div>
       <div className="virtual-lab-container">
-        <div className="html-css-code-blocks">
+      <EditorComponent
+          htmlCode={htmlCode}
+          cssCode={cssCode}
+          jsCode={jsCode}
+          handleEditorChange={handleEditorChange}
+          editorOptions={editorOptions}
+          expandedStates={expandedStates}
+          setExpandedState={handleExpandedState}
+          editorHeights={editorHeights}
+        />
+        {/* <div className="html-css-code-blocks">
           <div className="editor-container">
-            <h3>HTML</h3>
+            <span className='editor-title'>HTML</span>
             <MonacoEditor
-              height="200px"
-              width="320px"
+              height="150px"
+              width="400px"
               language="html"
               value={htmlCode}
               onChange={(newValue) => handleEditorChange(newValue, 'html')}
@@ -485,10 +549,10 @@ const validateJs = async () => {
             />
           </div>
           <div className="editor-container">
-            <h3>CSS</h3>
+          <span className='editor-title'>CSS</span>
             <MonacoEditor
-              height="200px"
-              width="320px"
+              height="150px"
+              width="400px"
               language="css"
               value={cssCode}
               onChange={(newValue) => handleEditorChange(newValue, 'css')}
@@ -496,19 +560,89 @@ const validateJs = async () => {
             />
           </div>
           <div className="editor-container">
-            <h3>JavaScript</h3>
+          <span className='editor-title'>JavaScript</span>
             <MonacoEditor
-              height="200px"
-              width="320px"
+              height="150px"
+              width="400px"
               language="javascript"
               value={jsCode}
               onChange={(newValue) => handleEditorChange(newValue, 'javascript')}
               options={editorOptions}
             />
           </div>
-        </div>
+        </div> */}
 
-        <div className="snippet-actions">
+        {/* <div className="snippet-actions">
+          <button onClick={() => setShowPrompt(true)} className="save-button">
+            {currentSnippetId ? 'Update Snippet' : 'Save to Server'}
+          </button>
+          <button onClick={createNewSnippet} className="new-snippet-button">
+            New Snippet
+          </button>
+          <button onClick={validateHtml} className="validate-button">
+            Validate HTML
+          </button>
+          <button onClick={validateJs} className="validate-button">
+            Analyze JavaScript
+          </button>
+          {currentSnippetId && (
+            <button 
+              onClick={() => setShowCollaboratorInput(!showCollaboratorInput)}
+              className="collaborator-button"
+            >
+              {showCollaboratorInput ? 'Cancel' : 'Add Collaborator'}
+            </button>
+          )}
+          {showCollaboratorInput && currentSnippetId && (
+            <div className="collaborator-input">
+              <input
+                type="email"
+                placeholder="Enter collaborator's email"
+                value={collaboratorEmail}
+                onChange={(e) => setCollaboratorEmail(e.target.value)}
+                className="email-input"
+              />
+              <button 
+                onClick={handleAddCollaborator}
+                className="confirm-collaborator-button"
+              >
+                Add
+              </button>
+            </div>
+          )}
+        </div> */}
+
+        {showPrompt && (
+          <div className="save-prompt">
+            <input
+              type="text"
+              placeholder="Enter file name"
+              value={codeName}
+              onChange={(e) => setCodeName(e.target.value)}
+              className="code-name-input"
+            />
+            <button onClick={saveToBackend} className="confirm-save-button">
+              Confirm Save
+            </button>
+            <button onClick={() => setShowPrompt(false)} className="cancel-save-button">
+              Cancel
+            </button>
+          </div>
+        )}
+
+        {message && <p className="message">{message}</p>}
+        <div className="real-time-container">
+          <div className="output-container">
+            <h3>Output</h3>
+            <iframe
+              title="Live Output"
+              srcDoc={generateOutput()}
+              width="100%"
+              height="400px"
+            ></iframe>
+          </div>
+
+          <div className="snippet-actions">
           <button onClick={() => setShowPrompt(true)} className="save-button">
             {currentSnippetId ? 'Update Snippet' : 'Save to Server'}
           </button>
@@ -548,37 +682,7 @@ const validateJs = async () => {
           )}
         </div>
 
-        {showPrompt && (
-          <div className="save-prompt">
-            <input
-              type="text"
-              placeholder="Enter file name"
-              value={codeName}
-              onChange={(e) => setCodeName(e.target.value)}
-              className="code-name-input"
-            />
-            <button onClick={saveToBackend} className="confirm-save-button">
-              Confirm Save
-            </button>
-            <button onClick={() => setShowPrompt(false)} className="cancel-save-button">
-              Cancel
-            </button>
-          </div>
-        )}
-
-        {message && <p className="message">{message}</p>}
-
-        <div className="output-container">
-          <h3>Output</h3>
-          <iframe
-            title="Live Output"
-            srcDoc={generateOutput()}
-            width="100%"
-            height="300px"
-          ></iframe>
-        </div>
-
-        <div className="html-errors">
+          <div className="html-errors">
           <h3>Validation Errors:</h3>
           {htmlErrors.length > 0 ? (
             <ul>
@@ -590,6 +694,8 @@ const validateJs = async () => {
             <p>No errors found.</p>
           )}
         </div>
+
+        </div>  
       </div>
     </div>
   );

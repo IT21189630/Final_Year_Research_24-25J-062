@@ -24,9 +24,9 @@
 }
 
 .editor-container{
-   width: 30%;
-    height: 100%;
+    height: fit-content;
     background-color: aquamarine;
+    width: 400px;
 }
 
 .monaco-editor .no-user-select .showUnused .showDeprecated .vs{
@@ -102,7 +102,83 @@ ul {
     margin-bottom: 0;
 }
 
-.snippet-actions{
-    display: none;
+
+.real-time-container{
+    width: 100%;
 }
 
+.editor-title{
+    font-size: 20px;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 10px;
+}
+
+.editor-title button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .editor-title button:hover {
+    background-color: #e0e0e0;
+    border-radius: 4px;
+  }
+
+  /* Add these styles */
+.html-css-code-blocks {
+    height: 540px; /* Total height for all editors */
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 4px;
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    overflow: hidden;
+    width: 620px;
+  }
+  
+  .editor-container {
+    transition: height 0.3s ease;
+    overflow: hidden;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .editor-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #eee;
+    height: 40px;
+  }
+  
+  .editor-content {
+    transition: height 0.3s ease;
+    overflow: hidden;
+  }
+  
+  /* Adjust Monaco editor to fill container */
+  .monaco-editor {
+    height: 100% !important;
+  }
+
+  .line-numbers{
+    width: 20px !important; 
+  }
+
+  .monaco-scrollable-element.editor-scrollable.vs{
+    left: 40px !important;
+    width: 360px !important;
+    height: 100% !important;
+  }
+
+  .overflow-guard{
+    height: 100% !important;    
+  }
