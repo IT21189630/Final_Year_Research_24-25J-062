@@ -79,13 +79,23 @@ function LevelDisplayer() {
                 <HiSparkles className="ld-spark" />
                 Course Progress:{" "}
                 <span className="ld-curr-progress">
-                  Completed {current_level - 1} out of {course.lessons.length}
+                  Completed{" "}
+                  {current_level - 1 >
+                  course.lessons[course.lessons.length - 1].level
+                    ? course.lessons[course.lessons.length - 1].level
+                    : current_level - 1}{" "}
+                  out of {course.lessons[course.lessons.length - 1].level}
+                  {/* {course.lessons[-1].level} */}
                 </span>
               </span>
               <div className="ld-enr-progress-bar-cont">
                 <div
                   className="ld-enr-filled-bar"
-                  style={{ width: `${progressPercentage}%` }}
+                  style={{
+                    width: `${
+                      progressPercentage > 100 ? 100 : progressPercentage
+                    }%`,
+                  }}
                 ></div>
                 <div className="ld-enr-full-bar"></div>
               </div>

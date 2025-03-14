@@ -24,6 +24,12 @@ import Lesson8 from "./courses/html/lesson-8/Lesson8";
 import Lesson9 from "./courses/html/lesson-9/Lesson9";
 import Lesson10 from "./courses/html/lesson-10/Lesson10";
 import HtmlProject from "./courses/html/html_project/HtmlProject";
+import Lesson21 from "./courses/css/lesson-21/Lesson21";
+import Lesson22 from "./courses/css/lesson-22/Lesson22";
+import Lesson23 from "./courses/css/lesson-23/Lesson-23";
+import Lesson24 from "./courses/css/lesson-24/Lesson24";
+import Lesson25 from "./courses/css/lesson-25/Lesson25";
+import Lesson26 from "./courses/css/lesson-26/Lesson26";
 
 import CourseDisplayer from "./pages/pages-student/available-courses/CourseDisplayer";
 import MyEnrollments from "./pages/pages-student/enrolled-courses/MyEnrollments";
@@ -90,6 +96,12 @@ function App() {
         <Route path="/lesson9" element={<Lesson9 />} />
         <Route path="/lesson10" element={<Lesson10 />} />
         <Route path="/lesson20" element={<HtmlProject />} />
+        <Route path="/lesson21" element={<Lesson21 />} />
+        <Route path="/lesson22" element={<Lesson22 />} />
+        <Route path="/lesson23" element={<Lesson23 />} />
+        <Route path="/lesson24" element={<Lesson24 />} />
+        <Route path="/lesson25" element={<Lesson25 />} />
+        <Route path="/lesson26" element={<Lesson26 />} />
       </Routes>
     </div>
   );
