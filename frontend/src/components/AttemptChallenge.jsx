@@ -1,0 +1,455 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import './AttemptChallenge.css';
+
+const AttemptChallenge = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [challenge, setChallenge] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  const [htmlCode, setHtmlCode] = useState('<div id="challenge-solution">\n  <!-- Your HTML here -->\n</div>');
+  const [cssCode, setCssCode] = useState('#challenge-solution {\n  /* Your CSS here */\n}');
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState(null);
+  
+  const previewFrameRef = useRef(null);
+  const previewContainerRef = useRef(null);
+  
+  // Track browser size
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
+
+  // Update window size on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Fetch challenge data
+  useEffect(() => {
+    const fetchChallenge = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:5000/api/dailychallenge/${id || 'today'}`);
+        setChallenge(response.data);
+      } catch (err) {
+        console.error('Error fetching challenge:', err);
+        setError('Failed to load challenge details');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChallenge();
+  }, [id]);
+
+  // Update preview when code changes with a unique ID to ensure fresh rendering
+  const updatePreview = () => {
+    const timestamp = new Date().getTime();
+    const combinedCode = `
+      <html>
+        <head>
+          <style>
+            body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: auto; }
+            html { width: 100%; height: 100%; }
+            ${cssCode}
+          </style>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <script>
+            // Helper function to communicate iframe readiness back to parent
+            function notifyReady() {
+              window.parent.postMessage({ type: 'IFRAME_READY', timestamp: ${timestamp} }, '*');
+            }
+            
+            // Notify when fully loaded
+            window.addEventListener('load', function() {
+              // Wait a short time to ensure all resources are loaded
+              setTimeout(notifyReady, 300);
+            });
+          </script>
+        </head>
+        <body>
+          ${htmlCode}
+        </body>
+      </html>
+    `;
+    
+    if (previewFrameRef.current) {
+      // Create a data URL from the HTML content
+      const blob = new Blob([combinedCode], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      
+      // Set the iframe src to the data URL
+      previewFrameRef.current.src = url;
+    }
+  };
+
+  // Clean up object URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewFrameRef.current && previewFrameRef.current.src) {
+        URL.revokeObjectURL(previewFrameRef.current.src);
+      }
+    };
+  }, []);
+
+  // Capture function that uses direct communication with the iframe
+  const captureIframe = () => {
+    return new Promise((resolve, reject) => {
+      if (!previewFrameRef.current) {
+        reject('No iframe to capture');
+        return;
+      }
+      
+      // Function to process messages from the iframe
+      const messageHandler = (event) => {
+        if (event.data && event.data.type === 'IFRAME_CAPTURE_RESULT') {
+          window.removeEventListener('message', messageHandler);
+          resolve(event.data.imageData);
+        }
+      };
+      
+      // Listen for messages from the iframe
+      window.addEventListener('message', messageHandler);
+      
+      try {
+        // Inject the html2canvas script into the iframe
+        const iframe = previewFrameRef.current;
+        const iframeWindow = iframe.contentWindow;
+        const iframeDoc = iframe.contentDocument || iframeWindow.document;
+        
+        // Create a script element for html2canvas
+        const script = iframeDoc.createElement('script');
+        script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+        script.onload = () => {
+          // Once html2canvas is loaded, capture the content
+          const captureScript = iframeDoc.createElement('script');
+          captureScript.textContent = `
+            html2canvas(document.body, {
+              backgroundColor: null,
+              scale: 2,
+              logging: false,
+              useCORS: true,
+              allowTaint: true,
+              width: document.body.scrollWidth,
+              height: document.body.scrollHeight
+            }).then(function(canvas) {
+              // Send the captured image back to the parent window
+              window.parent.postMessage({ 
+                type: 'IFRAME_CAPTURE_RESULT', 
+                imageData: canvas.toDataURL('image/png')
+              }, '*');
+            }).catch(function(err) {
+              console.error('Capture failed:', err);
+              window.parent.postMessage({ 
+                type: 'IFRAME_CAPTURE_ERROR', 
+                error: err.toString()
+              }, '*');
+            });
+          `;
+          iframeDoc.body.appendChild(captureScript);
+        };
+        
+        script.onerror = () => {
+          window.removeEventListener('message', messageHandler);
+          reject('Failed to load html2canvas in iframe');
+        };
+        
+        iframeDoc.head.appendChild(script);
+        
+        // Set a timeout in case capture fails
+        setTimeout(() => {
+          window.removeEventListener('message', messageHandler);
+          reject('Capture timed out');
+        }, 10000);
+      } catch (err) {
+        window.removeEventListener('message', messageHandler);
+        reject(err);
+      }
+    });
+  };
+
+  // Fallback method using DOM cloning
+  const captureByCloning = () => {
+    return new Promise((resolve, reject) => {
+      try {
+        // Wait for iframe to be fully loaded
+        setTimeout(async () => {
+          try {
+            // Get the iframe document
+            const iframe = previewFrameRef.current;
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            
+            // Create a deep clone of the iframe's body
+            const clonedBody = document.createElement('div');
+            clonedBody.innerHTML = iframeDoc.body.innerHTML;
+            
+            // Apply styles from iframe
+            const styles = Array.from(iframeDoc.styleSheets)
+              .map(styleSheet => {
+                try {
+                  return Array.from(styleSheet.cssRules)
+                    .map(rule => rule.cssText)
+                    .join('\n');
+                } catch (e) {
+                  console.log('Cannot access stylesheet rules');
+                  return '';
+                }
+              })
+              .join('\n');
+            
+            const styleElement = document.createElement('style');
+            styleElement.textContent = styles + '\n' + cssCode;
+            clonedBody.appendChild(styleElement);
+            
+            // Position the clone offscreen for capturing
+            clonedBody.style.position = 'fixed';
+            clonedBody.style.top = '0';
+            clonedBody.style.left = '-9999px';
+            clonedBody.style.width = `${iframe.clientWidth}px`;
+            clonedBody.style.height = `${iframe.clientHeight}px`;
+            clonedBody.style.overflow = 'hidden';
+            clonedBody.style.backgroundColor = 'white';
+            
+            // Append to document for capturing
+            document.body.appendChild(clonedBody);
+            
+            // Dynamically import html2canvas
+            const { default: html2canvas } = await import('html2canvas');
+            
+            const canvas = await html2canvas(clonedBody, {
+              backgroundColor: 'white',
+              scale: 2,
+              logging: false,
+              useCORS: true,
+              allowTaint: true
+            });
+            
+            const dataUrl = canvas.toDataURL('image/png');
+            
+            // Clean up
+            document.body.removeChild(clonedBody);
+            
+            resolve(dataUrl);
+          } catch (err) {
+            reject(err);
+          }
+        }, 1000); // Give iframe time to render
+      } catch (err) {
+        reject(err);
+      }
+    });
+  };
+
+  // Handle iframe readiness
+  useEffect(() => {
+    const handleIframeMessage = (event) => {
+      if (event.data && event.data.type === 'IFRAME_READY') {
+        console.log('Iframe reported ready at:', event.data.timestamp);
+        // You could trigger actions here if needed
+      }
+    };
+    
+    window.addEventListener('message', handleIframeMessage);
+    return () => window.removeEventListener('message', handleIframeMessage);
+  }, []);
+
+  // Handle submission
+  const handleSubmit = async () => {
+    try {
+      setSubmitting(true);
+      
+      // Try capture methods in sequence
+      let previewImage = null;
+      try {
+        console.log('Attempting direct iframe capture...');
+        previewImage = await captureIframe();
+      } catch (err) {
+        console.error('Error with iframe capture:', err);
+        try {
+          console.log('Falling back to DOM cloning method...');
+          previewImage = await captureByCloning();
+        } catch (err2) {
+          console.error('Error with DOM cloning method:', err2);
+          throw new Error('Failed to capture preview');
+        }
+      }
+      
+      if (!previewImage) {
+        throw new Error('Failed to capture preview');
+      }
+      
+      // Send submission to backend
+      const response = await axios.post('http://localhost:5000/api/dailysubmission', {
+        challengeId: challenge._id,
+        htmlCode,
+        cssCode,
+        outputImage: previewImage
+      });
+      
+      setResult(response.data);
+    } catch (err) {
+      console.error('Error submitting challenge:', err);
+      setError('Failed to submit challenge');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Update preview on code change or initial load
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      updatePreview();
+    }, 1000); // Debounce preview updates
+    
+    return () => clearTimeout(timeoutId);
+  }, [htmlCode, cssCode]);
+
+  // Update preview when window size changes
+  useEffect(() => {
+    updatePreview();
+  }, [windowSize]);
+
+  if (loading) {
+    return <div className="challenge-loading">Loading challenge...</div>;
+  }
+
+  if (error) {
+    return <div className="challenge-error">{error}</div>;
+  }
+
+  if (!challenge) {
+    return <div className="no-challenge">Challenge not found</div>;
+  }
+
+  return (
+    <div className="attempt-challenge-container">
+      <h1 className="challenge-title">Attempt Challenge: {challenge.title}</h1>
+      
+      {result ? (
+        <div className="submission-result">
+          <h2>Your Submission Result</h2>
+          <div className="score-display">
+            <div className="score-circle">
+              <span className="score-value">{result.score}%</span>
+            </div>
+          </div>
+          
+          <div className="comparison-container">
+            <div className="comparison-item">
+              <h3>Reference Image</h3>
+              <img src={challenge.imageUrl} alt="Reference" className="comparison-image" />
+            </div>
+            <div className="comparison-item">
+              <h3>Your Solution</h3>
+              <img src={result.outputImage} alt="Your solution" className="comparison-image" />
+            </div>
+          </div>
+          
+          <button 
+            className="action-button retry-button" 
+            onClick={() => setResult(null)}
+          >
+            Try Again
+          </button>
+          <button 
+            className="action-button return-button" 
+            onClick={() => navigate('/')}
+          >
+            Return Home
+          </button>
+        </div>
+      ) : (
+        <div className="challenge-workspace">
+
+          <div className="challenge-workspace-top">
+            <div className="reference-section">
+              <div  className="reference-section-top">
+                <h2>Reference Image</h2>
+                <img src={challenge.imageUrl} alt={challenge.title} className="reference-image" />
+              </div>
+              <div className="challenge-details">
+                <h3>Description</h3>
+                <p>{challenge.description}</p>
+              </div>
+            </div>
+            
+            <div className="code-section">
+              <div className="editor-container">
+                <div className="editor-header">
+                  <h3>HTML</h3>
+                </div>
+                <textarea
+                  className="code-editor html-editor"
+                  value={htmlCode}
+                  onChange={(e) => setHtmlCode(e.target.value)}
+                  spellCheck="false"
+                />
+              </div>
+              
+              <div className="editor-container">
+                <div className="editor-header">
+                  <h3>CSS</h3>
+                </div>
+                <textarea
+                  className="code-editor css-editor"
+                  value={cssCode}
+                  onChange={(e) => setCssCode(e.target.value)}
+                  spellCheck="false"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="preview-section">
+            <h2>Preview</h2>
+            <div 
+              className="preview-container" 
+              ref={previewContainerRef}
+              style={{
+                width: '100%',
+                height: '650px',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+            >
+              <iframe 
+                ref={previewFrameRef}
+                title="Preview"
+                className="preview-frame"
+                sandbox="allow-scripts allow-same-origin"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  overflow: 'hidden'
+                }}
+              />
+            </div>
+            <button 
+              className="submit-button"
+              onClick={handleSubmit}
+              disabled={submitting}
+            >
+              {submitting ? 'Submitting...' : 'Submit Solution'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AttemptChallenge;

@@ -23,9 +23,9 @@ const adminSidebarData = [
     link: "/admin/comp",
   },
   {
-    text: "Link",
+    text: "Add Daily Challenge",
     icon: <SiHiveBlockchain />,
-    link: "/admin/comp",
+    link: "/admin/dashboard/create-challenge",
   },
 ];
 
