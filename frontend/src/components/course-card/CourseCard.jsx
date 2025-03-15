@@ -30,9 +30,7 @@ function CourseCard(props) {
   return (
     <div className="course-card-container">
       <div className="ribbon">
-        <span>
-          Level {index + 1} {parseInt(prerequisites)}
-        </span>
+        <span>Level {index + 1}</span>
       </div>
       {flag < parseInt(prerequisites) && (
         <div className="course-lock-scrn">

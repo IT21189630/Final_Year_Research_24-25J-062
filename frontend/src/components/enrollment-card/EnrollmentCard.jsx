@@ -10,7 +10,8 @@ function EnrollmentCard(props) {
   const dispatch = useDispatch();
   const { course_id, current_level } = props;
   const { _id, image, description, lessons, name } = course_id;
-  const progressPercentage = ((current_level - 1) / lessons.length) * 100;
+  const progressPercentage =
+    ((current_level - 1) / lessons[lessons.length - 1].level) * 100;
 
   const navigate = useNavigate();
 
@@ -50,13 +51,18 @@ function EnrollmentCard(props) {
               <HiSparkles className="spark" />
               Course Progress:{" "}
               <span className="curr-progress">
-                Completed {current_level - 1} out of {lessons.length}
+                Completed {current_level - 1} out of{" "}
+                {lessons[lessons.length - 1].level}
               </span>
             </span>
             <div className="enr-progress-bar-cont">
               <div
                 className="enr-filled-bar"
-                style={{ width: `${progressPercentage}%` }}
+                style={{
+                  width: `${
+                    progressPercentage > 100 ? 100 : progressPercentage
+                  }%`,
+                }}
               ></div>
               <div className="enr-full-bar"></div>
             </div>

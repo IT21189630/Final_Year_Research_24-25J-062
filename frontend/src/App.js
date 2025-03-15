@@ -30,6 +30,7 @@ import Lesson23 from "./courses/css/lesson-23/Lesson-23";
 import Lesson24 from "./courses/css/lesson-24/Lesson24";
 import Lesson25 from "./courses/css/lesson-25/Lesson25";
 import Lesson26 from "./courses/css/lesson-26/Lesson26";
+import Lesson27 from "./courses/css/lesson-27/Lesson27";
 
 import CourseDisplayer from "./pages/pages-student/available-courses/CourseDisplayer";
 import MyEnrollments from "./pages/pages-student/enrolled-courses/MyEnrollments";
@@ -102,6 +103,7 @@ function App() {
         <Route path="/lesson24" element={<Lesson24 />} />
         <Route path="/lesson25" element={<Lesson25 />} />
         <Route path="/lesson26" element={<Lesson26 />} />
+        <Route path="/lesson27" element={<Lesson27 />} />
       </Routes>
     </div>
   );

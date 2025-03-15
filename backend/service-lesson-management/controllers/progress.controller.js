@@ -4,10 +4,12 @@ const progressModel = require("../models/progress.model");
 const getProgressByUserId = async (req, res) => {
   const { id } = req.params;
   try {
-    const results = await progressModel
-      .find({ user_id: id })
-      .populate("course_id")
-      .exec();
+    const results = await progressModel.find({ user_id: id }).populate({
+      path: "course_id",
+      populate: {
+        path: "lessons",
+      },
+    });
     if (results) {
       return res.status(200).json(results);
     } else {
