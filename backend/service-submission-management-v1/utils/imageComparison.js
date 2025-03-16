@@ -1,17 +1,19 @@
+// utils/imageComparison.js
 const { createCanvas, loadImage } = require('canvas');
 const pixelmatch = require('pixelmatch');
 const fs = require('fs');
 const path = require('path');
+const { compareImagesWithResNet } = require('./pythonBridge');
 
 /**
- * Compare two images and return a similarity score from 0 to 1
+ * Compare two images using pixelmatch and return a similarity score from 0 to 1
  * @param {string} referenceImagePath - Path to the reference image
  * @param {string} submissionImagePath - Path to the submission image
  * @returns {Promise<number>} - Similarity score (0-1, where 1 is perfect match)
  */
-const compareImages = async (referenceImagePath, submissionImagePath) => {
+const compareImagesPixelMatch = async (referenceImagePath, submissionImagePath) => {
   try {
-    console.log('Comparing images:');
+    console.log('Comparing images with pixelmatch:');
     console.log('Reference:', referenceImagePath);
     console.log('Submission:', submissionImagePath);
     
@@ -96,9 +98,46 @@ const compareImages = async (referenceImagePath, submissionImagePath) => {
     
     return similarityScore;
   } catch (error) {
-    console.error('Error comparing images:', error);
+    console.error('Error comparing images with pixelmatch:', error);
     return 0; // Return 0 score on error
   }
 };
 
-module.exports = { compareImages };
+/**
+ * Compare two images using a combination of pixel matching and ResNet feature comparison
+ * @param {string} referenceImagePath - Path to the reference image
+ * @param {string} submissionImagePath - Path to the submission image
+ * @returns {Promise<number>} - Similarity score (0-1, where 1 is perfect match)
+ */
+const compareImages = async (referenceImagePath, submissionImagePath) => {
+  try {
+    // Get pixel-based similarity score
+    const pixelSimilarity = await compareImagesPixelMatch(referenceImagePath, submissionImagePath);
+    
+    // Get ResNet-based similarity score
+    const resnetSimilarity = await compareImagesWithResNet(referenceImagePath, submissionImagePath);
+    
+    console.log(`Pixel-based similarity: ${pixelSimilarity.toFixed(4)}`);
+    console.log(`ResNet-based similarity: ${resnetSimilarity.toFixed(4)}`);
+    
+    // Combine the scores with more weight on the ResNet score (which is better at understanding visual content)
+    // You can adjust these weights based on your preference
+    const combinedScore = (0.3 * pixelSimilarity) + (0.7 * resnetSimilarity);
+    
+    console.log(`Combined similarity score: ${combinedScore.toFixed(4)}`);
+    
+    return combinedScore;
+  } catch (error) {
+    console.error('Error in combined image comparison:', error);
+    
+    // Fall back to pixel-based comparison if ResNet fails
+    try {
+      return await compareImagesPixelMatch(referenceImagePath, submissionImagePath);
+    } catch (fallbackError) {
+      console.error('Fallback comparison also failed:', fallbackError);
+      return 0;
+    }
+  }
+};
+
+module.exports = { compareImages, compareImagesPixelMatch };

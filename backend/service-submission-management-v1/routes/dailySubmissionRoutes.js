@@ -57,7 +57,15 @@ router.post('/', async (req, res) => {
     const savedImagePath = saveBase64Image(outputImage);
     
     // Get the full path for both images
-    const referenceImagePath = path.resolve(__dirname, '..', challenge.imageUrl.replace(/^\//, ''));
+    const extractRelativePath = (url) => {
+      // This regex will extract the path part after the domain
+      const matches = url.match(/^(?:https?:\/\/[^\/]+)?(.+)$/);
+      return matches ? matches[1] : url;
+    };
+    
+    // Then use it like this
+    const imagePath = extractRelativePath(challenge.imageUrl).replace(/^\//, '');
+    const referenceImagePath = path.resolve(__dirname, '..', imagePath);
     const submissionImagePath = path.resolve(__dirname, '..', savedImagePath.replace(/^\//, ''));
     
     console.log('Reference image path:', referenceImagePath);
