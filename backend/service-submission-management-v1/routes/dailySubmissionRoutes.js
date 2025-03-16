@@ -75,7 +75,8 @@ router.post('/', async (req, res) => {
     const similarityScore = await compareImages(referenceImagePath, submissionImagePath);
     
     // Add a minimum score to prevent total failure
-    const finalScore = Math.max(10, Math.round(similarityScore * 100));
+// Option 1: Keep as a number but with 2 decimal places of precision
+const finalScore = Math.max(10, Number((similarityScore * 100).toFixed(2)));
     
     // Create the submission record
     const submission = new DailySubmission({
@@ -83,7 +84,7 @@ router.post('/', async (req, res) => {
       htmlCode,
       cssCode,
       outputImage: savedImagePath,
-      score: finalScore
+      score: finalScore.toFixed(2)
     });
     
     await submission.save();
@@ -91,7 +92,7 @@ router.post('/', async (req, res) => {
     // Return the result
     res.status(201).json({
       _id: submission._id,
-      score: submission.score,
+      score: finalScore.toFixed(2),
       outputImage: `${req.protocol}://${req.get('host')}${savedImagePath}`,
       submittedAt: submission.submittedAt
     });
