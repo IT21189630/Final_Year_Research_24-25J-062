@@ -1,3 +1,4 @@
+// AttemptChallenge.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -12,6 +13,7 @@ const AttemptChallenge = () => {
   
   const [htmlCode, setHtmlCode] = useState('<div id="challenge-solution">\n  <!-- Your HTML here -->\n</div>');
   const [cssCode, setCssCode] = useState('#challenge-solution {\n  /* Your CSS here */\n}');
+  const [jsCode, setJsCode] = useState('// Your JavaScript here\n');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   
@@ -55,6 +57,17 @@ const AttemptChallenge = () => {
     fetchChallenge();
   }, [id]);
 
+  // Function to format description with line breaks
+  const formatDescription = (text) => {
+    if (!text) return null;
+    return text.split('\n').map((line, index) => (
+      <React.Fragment key={index}>
+        {line}
+        {index < text.split('\n').length - 1 && <br />}
+      </React.Fragment>
+    ));
+  };
+
   // Update preview when code changes with a unique ID to ensure fresh rendering
   const updatePreview = () => {
     const timestamp = new Date().getTime();
@@ -78,6 +91,14 @@ const AttemptChallenge = () => {
               // Wait a short time to ensure all resources are loaded
               setTimeout(notifyReady, 300);
             });
+
+            // User's JavaScript code wrapped in a try-catch for error handling
+            try {
+              ${jsCode}
+            } catch (error) {
+              console.error('Error in user JavaScript:', error);
+              window.parent.postMessage({ type: 'JS_ERROR', error: error.toString() }, '*');
+            }
           </script>
         </head>
         <body>
@@ -253,12 +274,14 @@ const AttemptChallenge = () => {
     });
   };
 
-  // Handle iframe readiness
+  // Handle JavaScript errors from the iframe
   useEffect(() => {
     const handleIframeMessage = (event) => {
       if (event.data && event.data.type === 'IFRAME_READY') {
         console.log('Iframe reported ready at:', event.data.timestamp);
-        // You could trigger actions here if needed
+      } else if (event.data && event.data.type === 'JS_ERROR') {
+        console.error('JavaScript error in iframe:', event.data.error);
+        // You could display this error to the user if needed
       }
     };
     
@@ -296,6 +319,7 @@ const AttemptChallenge = () => {
         challengeId: challenge._id,
         htmlCode,
         cssCode,
+        jsCode,
         outputImage: previewImage
       });
       
@@ -315,7 +339,7 @@ const AttemptChallenge = () => {
     }, 1000); // Debounce preview updates
     
     return () => clearTimeout(timeoutId);
-  }, [htmlCode, cssCode]);
+  }, [htmlCode, cssCode, jsCode]);
 
   // Update preview when window size changes
   useEffect(() => {
@@ -341,9 +365,35 @@ const AttemptChallenge = () => {
       {result ? (
         <div className="submission-result">
           <h2>Your Submission Result</h2>
-          <div className="score-display">
-            <div className="score-circle">
-              <span className="score-value">{result.score}%</span>
+          <div className="score-container">
+            <div className="score-display">
+              <h3>Overall Score</h3>
+              <div className="score-circle" style={{'--score': `${result.score}%`}}>
+                <span className="score-value">{result.score}%</span>
+              </div>
+            </div>
+            
+            <div className="score-breakdown">
+              <div className="score-item">
+                <h3>Visual Score</h3>
+                <div className="score-pill">
+                  <span>{result.visualScore}%</span>
+                </div>
+              </div>
+              <div className="score-item">
+                <h3>JS Quality</h3>
+                <div className="score-pill">
+                  <span>{result.jsScore}%</span>
+                </div>
+              </div>
+              {result.relevanceScore !== undefined && (
+                <div className="score-item">
+                  <h3>Challenge Relevance</h3>
+                  <div className="score-pill">
+                    <span>{result.relevanceScore}%</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           
@@ -358,36 +408,66 @@ const AttemptChallenge = () => {
             </div>
           </div>
           
-          <button 
-            className="action-button retry-button" 
-            onClick={() => setResult(null)}
-          >
-            Try Again
-          </button>
-          <button 
-            className="action-button return-button" 
-            onClick={() => navigate('/')}
-          >
-            Return Home
-          </button>
+          {result.jsEvaluation && (
+            <div className="js-evaluation">
+              <h3>JavaScript Evaluation</h3>
+              <div className="js-evaluation-content">
+                <pre>{result.jsEvaluation}</pre>
+              </div>
+            </div>
+          )}
+          
+          {result.relevanceFeedback && result.relevanceFeedback.length > 0 && (
+            <div className="js-relevance">
+              <h3>Challenge Relevance Feedback</h3>
+              <div className="js-relevance-content">
+                <ul>
+                  {result.relevanceFeedback.map((feedback, index) => (
+                    <li key={index}>{feedback}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+          
+          <div className="action-buttons">
+            <button 
+              className="action-button retry-button" 
+              onClick={() => setResult(null)}
+            >
+              Try Again
+            </button>
+            <button 
+              className="action-button return-button" 
+              onClick={() => navigate('/')}
+            >
+              Return Home
+            </button>
+          </div>
         </div>
       ) : (
         <div className="challenge-workspace">
-
-          <div className="challenge-workspace-top">
+          <div className="challenge-info-section">
             <div className="reference-section">
-              <div  className="reference-section-top">
-                <h2>Reference Image</h2>
-                <img src={challenge.imageUrl} alt={challenge.title} className="reference-image" />
-              </div>
-              <div className="challenge-details">
-                <h3>Description</h3>
-                <p>{challenge.description}</p>
+              <h2>Challenge Information</h2>
+              <div className="reference-content">
+                <div className="reference-image-container">
+                  <img src={challenge.imageUrl} alt={challenge.title} className="reference-image" />
+                </div>
+                <div className="challenge-details">
+                  <h3>Description</h3>
+                  <div className="challenge-description">
+                    {formatDescription(challenge.description)}
+                  </div>
+                </div>
               </div>
             </div>
-            
-            <div className="code-section">
-              <div className="editor-container">
+          </div>
+          
+          <div className="editors-section">
+            {/* <h2>Code Editors</h2> */}
+            <div className="editors-container">
+              <div className="editor-container html-editor-container">
                 <div className="editor-header">
                   <h3>HTML</h3>
                 </div>
@@ -399,7 +479,7 @@ const AttemptChallenge = () => {
                 />
               </div>
               
-              <div className="editor-container">
+              <div className="editor-container css-editor-container">
                 <div className="editor-header">
                   <h3>CSS</h3>
                 </div>
@@ -407,6 +487,18 @@ const AttemptChallenge = () => {
                   className="code-editor css-editor"
                   value={cssCode}
                   onChange={(e) => setCssCode(e.target.value)}
+                  spellCheck="false"
+                />
+              </div>
+              
+              <div className="editor-container js-editor-container">
+                <div className="editor-header">
+                  <h3>JavaScript</h3>
+                </div>
+                <textarea
+                  className="code-editor js-editor"
+                  value={jsCode}
+                  onChange={(e) => setJsCode(e.target.value)}
                   spellCheck="false"
                 />
               </div>
@@ -418,24 +510,12 @@ const AttemptChallenge = () => {
             <div 
               className="preview-container" 
               ref={previewContainerRef}
-              style={{
-                width: '100%',
-                height: '650px',
-                position: 'relative',
-                overflow: 'hidden'
-              }}
             >
               <iframe 
                 ref={previewFrameRef}
                 title="Preview"
                 className="preview-frame"
                 sandbox="allow-scripts allow-same-origin"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  border: 'none',
-                  overflow: 'hidden'
-                }}
               />
             </div>
             <button 

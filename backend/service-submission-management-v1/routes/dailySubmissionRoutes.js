@@ -1,8 +1,10 @@
+// routes/dailySubmissionRoutes.js
 const express = require('express');
 const router = express.Router();
 const DailySubmission = require('../models/DailySubmission');
 const DailyChallenge = require('../models/DailyChallenge');
 const { compareImages } = require('../utils/imageComparison');
+const { evaluateJavaScriptWithCodeBERT } = require('../utils/pythonBridge2');
 const fs = require('fs');
 const path = require('path');
 
@@ -38,13 +40,13 @@ const saveBase64Image = (base64Data) => {
 // Create a new submission
 router.post('/', async (req, res) => {
   try {
-    const { challengeId, htmlCode, cssCode, outputImage } = req.body;
+    const { challengeId, htmlCode, cssCode, jsCode, outputImage } = req.body;
     
     if (!challengeId || !htmlCode || !cssCode || !outputImage) {
       return res.status(400).json({ message: 'All fields are required' });
     }
     
-    // Get the challenge to access the reference image
+    // Get the challenge to access the reference image and challenge details
     const challenge = await DailyChallenge.findById(challengeId);
     
     if (!challenge) {
@@ -74,17 +76,62 @@ router.post('/', async (req, res) => {
     // Compare the images and get a similarity score
     const similarityScore = await compareImages(referenceImagePath, submissionImagePath);
     
-    // Add a minimum score to prevent total failure
-// Option 1: Keep as a number but with 2 decimal places of precision
-const finalScore = Math.max(10, Number((similarityScore * 100).toFixed(2)));
+    // Calculate visual score (0-100%)
+    const visualScore = Math.max(10, Number((similarityScore * 100).toFixed(2)));
     
-    // Create the submission record
+    // Evaluate JavaScript code if provided
+    let jsScore = 0;
+    let jsEvaluation = "No JavaScript code provided";
+    let relevanceScore = 0;
+    let relevanceFeedback = [];
+    
+    if (jsCode && jsCode.trim().length > 0) {
+      console.log('Evaluating JavaScript code...');
+      try {
+        // Pass challenge title and description to the evaluator
+        const evaluation = await evaluateJavaScriptWithCodeBERT(
+          jsCode,
+          challenge.title,
+          challenge.description
+        );
+        
+        jsScore = Math.max(10, Number((evaluation.score * 100).toFixed(2)));
+        jsEvaluation = evaluation.feedback;
+        
+        // Get the relevance score
+        relevanceScore = Math.max(0, Number((evaluation.relevanceScore * 100).toFixed(2)));
+        relevanceFeedback = evaluation.relevanceFeedback || [];
+        
+        console.log('JavaScript evaluation complete:', {
+          score: jsScore,
+          relevance: relevanceScore,
+          feedback: jsEvaluation.substring(0, 100) + '...'
+        });
+      } catch (jsError) {
+        console.error('Error evaluating JavaScript:', jsError);
+        jsScore = 10; // Minimum score on error
+        jsEvaluation = `Error evaluating JavaScript: ${jsError.message}`;
+      }
+    }
+    
+    // Calculate overall score
+    // Weighted average: 40% visual, 30% code quality, 30% relevance to challenge
+    const overallScore = Math.round(
+      (0.4 * visualScore) + (0.3 * jsScore) + (0.3 * relevanceScore)
+    );
+    
+    // Create the submission record with extended fields
     const submission = new DailySubmission({
       challengeId,
       htmlCode,
       cssCode,
+      jsCode,
       outputImage: savedImagePath,
-      score: finalScore.toFixed(2)
+      visualScore: visualScore,
+      jsScore: jsScore,
+      relevanceScore: relevanceScore,
+      jsEvaluation: jsEvaluation,
+      score: overallScore
     });
     
     await submission.save();
@@ -92,7 +139,12 @@ const finalScore = Math.max(10, Number((similarityScore * 100).toFixed(2)));
     // Return the result
     res.status(201).json({
       _id: submission._id,
-      score: finalScore.toFixed(2),
+      score: overallScore,
+      visualScore: visualScore,
+      jsScore: jsScore,
+      relevanceScore: relevanceScore,
+      jsEvaluation: jsEvaluation,
+      relevanceFeedback: relevanceFeedback,
       outputImage: `${req.protocol}://${req.get('host')}${savedImagePath}`,
       submittedAt: submission.submittedAt
     });

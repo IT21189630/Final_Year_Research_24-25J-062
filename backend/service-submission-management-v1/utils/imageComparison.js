@@ -122,7 +122,7 @@ const compareImages = async (referenceImagePath, submissionImagePath) => {
     
     // Combine the scores with more weight on the ResNet score (which is better at understanding visual content)
     // You can adjust these weights based on your preference
-    const combinedScore = (0.3 * pixelSimilarity) + (0.7 * resnetSimilarity);
+    const combinedScore = (0.1 * pixelSimilarity) + (0.9 * resnetSimilarity);
     
     console.log(`Combined similarity score: ${combinedScore.toFixed(4)}`);
     

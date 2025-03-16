@@ -1,3 +1,4 @@
+// models/DailySubmission.js
 const mongoose = require('mongoose');
 
 const dailySubmissionSchema = new mongoose.Schema({
@@ -14,6 +15,10 @@ const dailySubmissionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  jsCode: {
+    type: String,
+    default: ''
+  },
   outputImage: {
     type: String,
     required: true
@@ -21,6 +26,22 @@ const dailySubmissionSchema = new mongoose.Schema({
   score: {
     type: Number,
     required: true
+  },
+  visualScore: {
+    type: Number,
+    required: true
+  },
+  jsScore: {
+    type: Number,
+    default: 0
+  },
+  relevanceScore: {
+    type: Number,
+    default: 0
+  },
+  jsEvaluation: {
+    type: String,
+    default: ''
   },
   submittedAt: {
     type: Date,

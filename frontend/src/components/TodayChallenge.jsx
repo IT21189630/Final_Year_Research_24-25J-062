@@ -1,3 +1,4 @@
+// TodayChallenge.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -46,6 +47,16 @@ const TodayChallenge = () => {
     return <div className="no-challenge">No challenge available for today</div>;
   }
 
+  // Function to preserve line breaks from database
+  const formatDescription = (text) => {
+    return text.split('\n').map((line, index) => (
+      <React.Fragment key={index}>
+        {line}
+        {index < text.split('\n').length - 1 && <br />}
+      </React.Fragment>
+    ));
+  };
+
   return (
     <div className="today-challenge-container">
       <h1 className="challenge-title">Today's Challenge</h1>
@@ -64,16 +75,18 @@ const TodayChallenge = () => {
         </div>
         
         <div className="challenge-content">
-          <div className="challenge-image-container">
-            <img 
-              src={challenge.imageUrl} 
-              alt={challenge.title} 
-              className="challenge-image" 
-            />
-          </div>
-          
-          <div className="challenge-description">
-            <p>{challenge.description}</p>
+          <div className="challenge-flex-container">
+            <div className="challenge-image-container">
+              <img 
+                src={challenge.imageUrl} 
+                alt={challenge.title} 
+                className="challenge-image" 
+              />
+            </div>
+            
+            <div className="challenge-description">
+              {formatDescription(challenge.description)}
+            </div>
           </div>
         </div>
         
