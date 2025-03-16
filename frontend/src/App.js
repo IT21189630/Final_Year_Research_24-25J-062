@@ -43,6 +43,7 @@ import MainScreenStudent from "./pages/pages-student/main-screen/MainScreenStude
 
 // m4 page imports
 
+// js lesson page imports
 import JavaScriptLesson1 from "./courses/javascript/lesson-1/JSLesson1";
 
 function App() {
