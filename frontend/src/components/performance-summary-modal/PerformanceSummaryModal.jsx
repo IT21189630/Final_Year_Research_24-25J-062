@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import "./performance-summary-modal.styles.css";
 
 function PerformanceSummaryModal(props) {
+  const { course_id } = useSelector((state) => state.progress);
   let { visibility, score } = props;
   const navigate = useNavigate();
   useEffect(() => {
@@ -29,7 +31,7 @@ function PerformanceSummaryModal(props) {
   }, [visibility, score]);
 
   const backToCourses = () => {
-    navigate("/courses/");
+    navigate(`/student/dashboard/course/levels/${course_id}`);
   };
 
   return (

@@ -22,6 +22,21 @@ import Lesson6 from "./courses/html/lesson-6/Lesson6";
 import Lesson7 from "./courses/html/lesson-7/Lesson7";
 import Lesson8 from "./courses/html/lesson-8/Lesson8";
 import Lesson9 from "./courses/html/lesson-9/Lesson9";
+import Lesson10 from "./courses/html/lesson-10/Lesson10";
+import HtmlProject from "./courses/html/html_project/HtmlProject";
+import Lesson21 from "./courses/css/lesson-21/Lesson21";
+import Lesson22 from "./courses/css/lesson-22/Lesson22";
+import Lesson23 from "./courses/css/lesson-23/Lesson-23";
+import Lesson24 from "./courses/css/lesson-24/Lesson24";
+import Lesson25 from "./courses/css/lesson-25/Lesson25";
+import Lesson26 from "./courses/css/lesson-26/Lesson26";
+import Lesson27 from "./courses/css/lesson-27/Lesson27";
+
+import CourseDisplayer from "./pages/pages-student/available-courses/CourseDisplayer";
+import MyEnrollments from "./pages/pages-student/enrolled-courses/MyEnrollments";
+import LevelDisplayer from "./pages/pages-student/level-displayer/LevelDisplayer";
+import SupportLessonsDisplayer from "./pages/pages-student/support-lessons/SupportLessonsDisplayer";
+import MainScreenStudent from "./pages/pages-student/main-screen/MainScreenStudent";
 // m2 page imports
 
 // m3 page imports
@@ -34,7 +49,7 @@ function App() {
   return (
     <div className="App">
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<SignIn />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<Signup />} />
         <Route path="*" element={<NotFound />} />
@@ -49,7 +64,27 @@ function App() {
         {/* student page routes */}
         <Route path="/student/dashboard" element={<StudentProtectedRoute />}>
           <Route path="/student/dashboard/" element={<StudentDashboard />}>
-            <Route path="/student/dashboard/" element={<MarkupAdmin />} />
+            <Route path="/student/dashboard/" element={<MainScreenStudent />} />
+            <Route
+              path="/student/dashboard/courses"
+              element={<CourseDisplayer />}
+            />
+            <Route
+              path="/student/dashboard/enrollments"
+              element={<MyEnrollments />}
+            />
+            <Route
+              path="/student/dashboard/course/levels/:id"
+              element={<LevelDisplayer />}
+            />
+            <Route
+              path="/student/dashboard/course/support_lessons"
+              element={<SupportLessonsDisplayer />}
+            />
+            <Route
+              path="/student/dashboard/overview"
+              element={<MainScreenStudent />}
+            />
           </Route>
         </Route>
 
@@ -62,6 +97,15 @@ function App() {
         <Route path="/lesson7" element={<Lesson7 />} />
         <Route path="/lesson8" element={<Lesson8 />} />
         <Route path="/lesson9" element={<Lesson9 />} />
+        <Route path="/lesson10" element={<Lesson10 />} />
+        <Route path="/lesson20" element={<HtmlProject />} />
+        <Route path="/lesson21" element={<Lesson21 />} />
+        <Route path="/lesson22" element={<Lesson22 />} />
+        <Route path="/lesson23" element={<Lesson23 />} />
+        <Route path="/lesson24" element={<Lesson24 />} />
+        <Route path="/lesson25" element={<Lesson25 />} />
+        <Route path="/lesson26" element={<Lesson26 />} />
+        <Route path="/lesson27" element={<Lesson27 />} />
 
         <Route path="/js/lesson1" element={<JavaScriptLesson1 />} />
       </Routes>

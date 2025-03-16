@@ -30,7 +30,7 @@ const courseSchema = mongoose.Schema(
         required: [true, "Course must contain at least one lesson!"],
       },
     ],
-    vibility: {
+    visibility: {
       type: Boolean,
       default: false,
     },

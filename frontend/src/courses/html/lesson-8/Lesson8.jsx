@@ -4,10 +4,12 @@ import { useCodeMirror } from "@uiw/react-codemirror";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { html } from "@codemirror/lang-html";
 import GalacticBackground from "../../../images/lessons/galactic-background.jpg";
-import TargetOutput from "../../../images/lessons/target-output-lesson-5.png";
 import AstronautGuider from "../../../images/lessons/motive-image.png";
 import TabletScreen from "../../../images/lessons/tab-screen.png";
 import Timer from "../../../components/timer/Timer";
+import { useSelector, useDispatch } from "react-redux";
+import { updateProgress } from "../../../features/Progress.slice";
+import { updateCourseProgress } from "../../../components/course-progress-updater/CourseProgressUpdater";
 import { IoMdTimer } from "react-icons/io";
 import { FaStar } from "react-icons/fa";
 import { toast } from "react-hot-toast";
@@ -16,6 +18,11 @@ import "./lesson8.styles.css";
 import PerformanceSummaryModal from "../../../components/performance-summary-modal/PerformanceSummaryModal";
 
 function Lesson8() {
+  const dispatch = useDispatch();
+  const { course_id } = useSelector((state) => state.progress);
+  const { user_id } = useSelector((state) => state.user);
+  const { lesson_id } = useSelector((state) => state.lesson);
+
   const initialCode = `<!DOCTYPE html>
 <html>
   <head>
@@ -89,7 +96,7 @@ function Lesson8() {
     }
   };
 
-  const validateAnswer = (consumedTime) => {
+  const validateAnswer = async (consumedTime) => {
     let htmlContent = htmlInput.trim();
     const headBeforeBody =
       /<html[^>]*>\s*<head[^>]*>[\s\S]*<\/head>\s*<body[^>]*>[\s\S]*<\/body>\s*<\/html>/i.test(
@@ -137,6 +144,22 @@ function Lesson8() {
         });
         setPerformanceScore(score);
         setShowModal(true);
+        const nextLevel = 9;
+        const updateFlag = await updateCourseProgress(
+          user_id,
+          course_id,
+          lesson_id,
+          score,
+          nextLevel
+        );
+        if (updateFlag) {
+          dispatch(
+            updateProgress({
+              current_level: nextLevel,
+            })
+          );
+          toast.success("Your progress updated!");
+        }
       }
     } else {
       toast.error("Not an acceptable answer!");

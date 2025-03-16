@@ -46,6 +46,16 @@ app.use(
   require("./routes/performance.routes")
 );
 
+app.use(
+  "/gamified-learning/api/lesson-management/recommendations",
+  require("./routes/recommendation.routes")
+);
+
+app.use(
+  "/gamified-learning/api/lesson-management/support_lessons",
+  require("./routes/supplimentary_lessons.routes")
+);
+
 app.use(verifyJWT);
 app.use(errorHandler);
 

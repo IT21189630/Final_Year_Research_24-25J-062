@@ -1,0 +1,89 @@
+.sl-card-container {
+  width: 350px;
+  border-radius: 10px;
+  margin: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  background-color: #f2f0e3;
+  box-shadow: 4px 8px 8px rgba(0, 0, 0, 0.5);
+  border: 3px solid #1e1e1e;
+  transition: 0.3s;
+}
+
+.sl-card-container:hover {
+  cursor: pointer;
+}
+
+.sl-name {
+  font-family: monospace;
+  font-weight: 600;
+  font-size: 1.5em;
+}
+
+.sl-date-notification {
+  text-transform: capitalize;
+  font-weight: 600;
+  font-style: italic;
+  color: grey;
+  margin-top: 10px;
+}
+
+.top-row {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sl-difficulty-badge {
+  height: 100%;
+  font-size: 1.2em;
+}
+
+.badge {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 18px;
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.hard {
+  background-color: purple;
+}
+
+.easy {
+  background-color: green;
+}
+
+.sl-nav-btn {
+  padding: 5px 15px;
+  margin-top: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 12px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(7.6px);
+  -webkit-backdrop-filter: blur(7.6px);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  transition: 0.3s;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.sl-play-icon {
+  font-size: 1em;
+  margin-right: 10px;
+}
+
+.sl-nav-btn:hover {
+  background-color: rgb(214, 214, 214);
+  cursor: pointer;
+}

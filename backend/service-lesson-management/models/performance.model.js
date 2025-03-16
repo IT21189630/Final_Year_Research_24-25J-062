@@ -11,6 +11,11 @@ const performanceSchema = mongoose.Schema(
       ref: "Lesson",
       required: [true, "Lesson id is required!"],
     },
+    course: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course",
+      required: [true, "Course id is required!"],
+    },
     performance_score: {
       type: Number,
       required: [true, "Performance score is required!"],

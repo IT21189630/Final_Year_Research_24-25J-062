@@ -7,6 +7,7 @@ const getPerformanceByUserId = async (req, res) => {
     const results = await performanceModel
       .find({ user_id: id })
       .populate("lesson")
+      .populate("course")
       .exec();
     if (results) {
       return res.status(200).json(results);
@@ -28,6 +29,7 @@ const getPerformanceByLesson = async (req, res) => {
     const results = await performanceModel
       .find({ lesson: id })
       .populate("lesson")
+      .populate("course")
       .exec();
     if (results) {
       return res.status(200).json(results);
@@ -44,8 +46,8 @@ const getPerformanceByLesson = async (req, res) => {
 
 //create course performance record
 const createPerformanceRecord = async (req, res) => {
-  const { userId, lessonId, performanceScore } = req.body;
-  if (!userId || !lessonId || !performanceScore) {
+  const { userId, lessonId, courseId, performanceScore } = req.body;
+  if (!userId || !lessonId || !courseId || !performanceScore) {
     return res.status(400).json({
       error:
         "user id and course id and performanceScore is required for performance record!",
@@ -55,6 +57,7 @@ const createPerformanceRecord = async (req, res) => {
     const createdPerformanceRecord = await performanceModel.create({
       user_id: userId,
       lesson: lessonId,
+      course: courseId,
       performance_score: performanceScore,
     });
     if (createdPerformanceRecord) {

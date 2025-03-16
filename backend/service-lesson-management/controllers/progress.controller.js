@@ -4,7 +4,12 @@ const progressModel = require("../models/progress.model");
 const getProgressByUserId = async (req, res) => {
   const { id } = req.params;
   try {
-    const results = await progressModel.find({ user_id: id }).exec();
+    const results = await progressModel.find({ user_id: id }).populate({
+      path: "course_id",
+      populate: {
+        path: "lessons",
+      },
+    });
     if (results) {
       return res.status(200).json(results);
     } else {
@@ -45,6 +50,15 @@ const createCourseProgress = async (req, res) => {
     });
   }
   try {
+    const duplicate = await progressModel
+      .findOne({ user_id: userId, course_id: courseId })
+      .exec();
+
+    if (duplicate) {
+      return res
+        .status(403)
+        .json({ message: "You have already enrolled to the course!" });
+    }
     const createdProgressRecord = await progressModel.create({
       course_id: courseId,
       user_id: userId,
@@ -85,7 +99,10 @@ const updateCourseProgress = async (req, res) => {
     }
 
     const filter = { user_id: userId, course_id: courseId };
-    const update = { current_level: currentLevel, current_xp: xpPoints };
+    const update = {
+      current_level: currentLevel,
+      $inc: { current_xp: xpPoints },
+    };
     const targetProgressRecord = await progressModel.findOneAndUpdate(
       filter,
       update,

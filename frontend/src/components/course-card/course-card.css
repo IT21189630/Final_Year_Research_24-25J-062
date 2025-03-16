@@ -1,0 +1,167 @@
+.course-card-container {
+  position: relative;
+  width: 350px;
+  height: 600px;
+  margin: 20px;
+  border-radius: 15px;
+  box-shadow: 5px 5px 8px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  border: 6px solid #1e1e1e;
+}
+
+.course-lock-scrn {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.lock-icon {
+  width: 200px;
+}
+
+.course-info-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #f2f0e3;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 20px 20px 0 20px;
+}
+
+.ribbon {
+  position: absolute;
+  height: 150px;
+  width: 150px;
+  top: -6px;
+  right: -6px;
+  overflow: hidden;
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.3));
+  z-index: 3;
+}
+
+.ribbon > span {
+  display: block;
+  background-color: crimson;
+  color: white;
+  font-weight: 600;
+  line-height: 1.7em;
+  width: 100%;
+  text-transform: uppercase;
+  height: 30px;
+  text-align: center;
+  transform-origin: top right;
+  transform: rotate(45deg) translate(50%, 160%);
+}
+
+.lock-scrn-text {
+  margin-top: 20px;
+  font-size: 2em;
+  color: white;
+  font-family: monospace;
+}
+
+.front-row-options {
+  width: 100%;
+  padding: 10px;
+  height: 20px;
+}
+
+.course-image-container {
+  width: 100%;
+  height: 280px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.course-image {
+  position: absolute;
+  height: 80%;
+}
+
+.support-circle {
+  width: 230px;
+  height: 230px;
+  border-radius: 50%;
+  background-color: #1e1e1e;
+}
+
+.level-name {
+  font-size: 1.5em;
+  font-family: monospace;
+  line-height: 1.2em;
+  font-weight: bold;
+}
+
+.logo-card {
+  height: 30px;
+  backdrop-filter: blur(20%);
+}
+
+.level-counter {
+  font-size: 0.8em;
+  font-family: sans-serif;
+  text-align: left;
+  width: 100%;
+  color: #db4935;
+  font-weight: 600;
+}
+
+.course-description {
+  text-align: justify;
+  text-justify: inter-word;
+  margin-top: 10px;
+}
+
+.course-price-container {
+  width: 95%;
+  height: 50px;
+  background-color: #1e1e1e;
+  border-radius: 10px 10px 0 0;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.price-prompt {
+  color: white;
+  font-size: 0.8em;
+  position: relative;
+}
+
+.enroll-btn {
+  padding: 3px 10px;
+  width: 90px;
+  border-radius: 5px;
+  font-size: 1em;
+  font-weight: 600;
+  color: #1e1e1e;
+  background-color: #f2b43b;
+  border: none;
+  transition: 0.2s;
+}
+
+.enroll-btn:hover {
+  background-color: #c7942f;
+}
+
+.price-prompt::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 45%;
+  height: 2px;
+  border-radius: 1px;
+  background-color: #f2b43b;
+}
