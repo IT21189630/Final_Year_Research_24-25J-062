@@ -87,6 +87,7 @@ function CourseDisplayer() {
         <div className="filter-container"></div>
         <div className="course-content-container">
           <span className="page-headline">Available Courses</span>
+          {flag} {current_level}
           {error || loading ? (
             <ErrorPage />
           ) : (

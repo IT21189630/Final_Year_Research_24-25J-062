@@ -1,26 +1,3 @@
-.motivater {
-  display: flex;
-  align-items: center;
-  background-color: rgba(0, 0, 0, 0.7);
-  padding: 10px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  margin-top: 20px;
-  min-height: 80px;
-  width: 90%;
-}
-
-.astro-guider {
-  width: 60px;
-  height: 60px;
-  margin-right: 10px;
-}
-
-.motive-text {
-  color: white;
-  font-style: italic;
-}
-
 .space-center-area {
   width: 100%;
   display: flex;
@@ -35,6 +12,8 @@
   border-radius: 10px;
   padding: 15px;
   color: white;
+  scale: 0.7;
+  transform: translateY(200px);
 }
 
 .control-panel-preview {

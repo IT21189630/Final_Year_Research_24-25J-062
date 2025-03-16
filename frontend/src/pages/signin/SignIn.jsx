@@ -45,6 +45,7 @@ function SignIn() {
       if (response.data) {
         const { username } = response.data;
         toast.success(`Hello! ${username}`);
+        console.log(response);
 
         dispatch(
           login({

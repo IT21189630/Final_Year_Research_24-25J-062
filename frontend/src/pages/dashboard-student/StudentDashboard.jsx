@@ -4,6 +4,7 @@ import axiosInstance from "../../axios/axiosInstance";
 import { Student } from "../../configurations/userRoles";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../features/User.slice";
+import { resetProgress } from "../../features/Progress.slice";
 import { Link, useNavigate, Outlet } from "react-router-dom";
 import { IoClose } from "react-icons/io5";
 import { MdOutlineMenu } from "react-icons/md";
@@ -34,6 +35,7 @@ function StudentDashboard() {
       });
       if (response) {
         dispatch(logout());
+        dispatch(resetProgress());
         navigate("/sign-in");
       }
     } catch (error) {

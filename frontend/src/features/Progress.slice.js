@@ -23,9 +23,13 @@ export const progressSlice = createSlice({
     updateProgress: (state, action) => {
       state.current_level = action.payload.current_level;
     },
+    resetProgress: (state) => {
+      state.current_level = 1;
+    },
   },
 });
 
-export const { save, reset, updateProgress } = progressSlice.actions;
+export const { save, reset, updateProgress, resetProgress } =
+  progressSlice.actions;
 
 export default progressSlice.reducer;
