@@ -37,6 +37,11 @@ import MyEnrollments from "./pages/pages-student/enrolled-courses/MyEnrollments"
 import LevelDisplayer from "./pages/pages-student/level-displayer/LevelDisplayer";
 import SupportLessonsDisplayer from "./pages/pages-student/support-lessons/SupportLessonsDisplayer";
 import MainScreenStudent from "./pages/pages-student/main-screen/MainScreenStudent";
+
+import CreateLesson from "./pages/pages-admin/create-lesson/CreateLesson";
+import CreateCourse from "./pages/pages-admin/create-course/CreateCourse";
+import UpdateCourse from "./pages/pages-admin/update-course/UpdateCourse";
+import CreateRecommendation from "./pages/pages-admin/create-recommendation-lesson/CreateRecommendation";
 // m2 page imports
 
 // m3 page imports
@@ -56,6 +61,22 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminProtectedRoute />}>
           <Route path="/admin/dashboard/" element={<AdminDashboard />}>
             <Route path="/admin/dashboard/" element={<MarkupAdmin />} />
+            <Route
+              path="/admin/dashboard/create_lesson"
+              element={<CreateLesson />}
+            />
+            <Route
+              path="/admin/dashboard/create_course"
+              element={<CreateCourse />}
+            />
+            <Route
+              path="/admin/dashboard/update_course"
+              element={<UpdateCourse />}
+            />
+            <Route
+              path="/admin/dashboard/create_recommendation"
+              element={<CreateRecommendation />}
+            />
           </Route>
         </Route>
 

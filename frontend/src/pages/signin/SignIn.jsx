@@ -56,8 +56,6 @@ function SignIn() {
           })
         );
 
-        console.log(response.data);
-
         if (response.data.user_role === Admin) {
           return navigate("/admin/dashboard/");
         }

@@ -1,31 +1,29 @@
 import { SiHiveBlockchain } from "react-icons/si";
+import { MdPlayLesson } from "react-icons/md";
+import { SiCoursera } from "react-icons/si";
+import { FaRobot } from "react-icons/fa";
+import { GiMechanicalArm } from "react-icons/gi";
 
 const adminSidebarData = [
   {
-    text: "Link",
-    icon: <SiHiveBlockchain />,
-    link: "/admin/comp",
+    text: "Create Lesson",
+    icon: <MdPlayLesson />,
+    link: "/admin/dashboard/create_lesson",
   },
   {
-    text: "Link",
-    icon: <SiHiveBlockchain />,
-    link: "/admin/comp",
+    text: "Create Course",
+    icon: <SiCoursera />,
+    link: "/admin/dashboard/create_course",
   },
   {
-    text: "Link",
-    icon: <SiHiveBlockchain />,
-    link: "/admin/comp",
-  },
-
-  {
-    text: "Link",
-    icon: <SiHiveBlockchain />,
-    link: "/admin/comp",
+    text: "Update Course",
+    icon: <GiMechanicalArm />,
+    link: "/admin/dashboard/update_course",
   },
   {
-    text: "Link",
-    icon: <SiHiveBlockchain />,
-    link: "/admin/comp",
+    text: "Create Recommendation Lesson",
+    icon: <FaRobot />,
+    link: "/admin/dashboard/create_recommendation",
   },
 ];
 

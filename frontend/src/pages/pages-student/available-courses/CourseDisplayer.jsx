@@ -13,19 +13,44 @@ import LoadingScreen from "../../../components/loading-screen/LoadingScreen";
 import axiosInstanceLessonMangement from "../../../axios/axiosInstanceLessonMangement";
 
 function CourseDisplayer() {
-  const { current_level } = useSelector((state) => state.progress);
-
-  let flag = 0;
-
-  if (current_level < 20) {
-    flag = 1;
-  } else if (current_level >= 20) {
-    flag = 2;
-  }
-
+  const { user_id } = useSelector((state) => state.user);
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+
+  const fetchUserEnrollments = async () => {
+    try {
+      setLoading(true);
+      const response = await axiosInstanceLessonMangement.get(
+        `/progress/user/${user_id}`
+      );
+      if (response.data) {
+        console.log(response.data);
+        setEnrolledCourses(response.data);
+        setLoading(false);
+        toast.success("User enrollments fetched!");
+      }
+    } catch (error) {
+      setError(true);
+      toast.error("Can not fetch user enrollments!");
+    }
+  };
+
+  let flag = 0;
+
+  if (enrolledCourses.length == 0 || enrolledCourses.length < 2) {
+    flag = 1;
+  } else if (
+    enrolledCourses.length > 1 ||
+    enrolledCourses[0].current_level ==
+      enrolledCourses[0].course_id.lessons[
+        enrolledCourses[0].course_id.lessons.length - 1
+      ].level +
+        1
+  ) {
+    flag = 2;
+  }
 
   function SampleNextArrow(props) {
     const { onClick } = props;
@@ -78,7 +103,8 @@ function CourseDisplayer() {
 
   useEffect(() => {
     fetchCourses();
-  }, []);
+    fetchUserEnrollments();
+  }, [user_id]);
 
   return (
     <>
@@ -87,7 +113,7 @@ function CourseDisplayer() {
         <div className="filter-container"></div>
         <div className="course-content-container">
           <span className="page-headline">Available Courses</span>
-          {flag} {current_level}
+          {flag}
           {error || loading ? (
             <ErrorPage />
           ) : (
