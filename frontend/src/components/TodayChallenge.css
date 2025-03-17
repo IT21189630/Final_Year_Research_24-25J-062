@@ -42,7 +42,7 @@
 }
 
 .challenge-header {
-  background: linear-gradient(45deg, #4cc9f0, #4361ee);
+  background: #4361ee;
   padding: 25px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -117,7 +117,7 @@
 
 .attempt-button {
   display: inline-block;
-  background: linear-gradient(45deg, #4361ee, #4cc9f0);
+  background: #4361ee;
   color: white;
   font-weight: 600;
   padding: 12px 30px;
@@ -133,7 +133,7 @@
 .attempt-button:hover {
   transform: translateY(-3px);
   box-shadow: 0 7px 20px rgba(67, 97, 238, 0.4);
-  background: linear-gradient(45deg, #3a56e0, #3db8e0);
+  background: #203188;
 }
 
 .challenge-loading {

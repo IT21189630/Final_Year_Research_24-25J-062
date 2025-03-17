@@ -112,18 +112,19 @@ const compareImagesPixelMatch = async (referenceImagePath, submissionImagePath) 
 const compareImages = async (referenceImagePath, submissionImagePath) => {
   try {
     // Get pixel-based similarity score
-    const pixelSimilarity = await compareImagesPixelMatch(referenceImagePath, submissionImagePath);
+    //const pixelSimilarity = await compareImagesPixelMatch(referenceImagePath, submissionImagePath);
     
     // Get ResNet-based similarity score
     const resnetSimilarity = await compareImagesWithResNet(referenceImagePath, submissionImagePath);
     
-    console.log(`Pixel-based similarity: ${pixelSimilarity.toFixed(4)}`);
+    //console.log(`Pixel-based similarity: ${pixelSimilarity.toFixed(4)}`);
     console.log(`ResNet-based similarity: ${resnetSimilarity.toFixed(4)}`);
     
     // Combine the scores with more weight on the ResNet score (which is better at understanding visual content)
     // You can adjust these weights based on your preference
-    const combinedScore = (0.1 * pixelSimilarity) + (0.9 * resnetSimilarity);
-    
+    // const combinedScore = (0.1 * pixelSimilarity) + (0.9 * resnetSimilarity);
+    const combinedScore = resnetSimilarity;
+
     console.log(`Combined similarity score: ${combinedScore.toFixed(4)}`);
     
     return combinedScore;

@@ -19,7 +19,10 @@ const AttemptChallenge = () => {
   
   const previewFrameRef = useRef(null);
   const previewContainerRef = useRef(null);
-  
+
+  const [processingStage, setProcessingStage] = useState(null); // tracks current processing stage
+  const [processingProgress, setProcessingProgress] = useState(0); 
+    
   // Track browser size
   const [windowSize, setWindowSize] = useState({
     width: window.innerWidth,
@@ -293,11 +296,15 @@ const AttemptChallenge = () => {
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
+      setProcessingStage('preparing');
+      setProcessingProgress(10);
       
       // Try capture methods in sequence
       let previewImage = null;
       try {
         console.log('Attempting direct iframe capture...');
+        setProcessingStage('capturing');
+        setProcessingProgress(20);
         previewImage = await captureIframe();
       } catch (err) {
         console.error('Error with iframe capture:', err);
@@ -315,6 +322,17 @@ const AttemptChallenge = () => {
       }
       
       // Send submission to backend
+      setProcessingStage('comparing');
+      setProcessingProgress(60);
+      
+      // Create a custom timeout to show progress animation
+      const progressTimer = setInterval(() => {
+        setProcessingProgress(prev => {
+          if (prev < 90) return prev + 2; // Smaller increment (2% instead of 5%)
+          return prev;
+        });
+      }, 1200);
+      
       const response = await axios.post('http://localhost:5000/api/dailysubmission', {
         challengeId: challenge._id,
         htmlCode,
@@ -323,14 +341,50 @@ const AttemptChallenge = () => {
         outputImage: previewImage
       });
       
+      clearInterval(progressTimer);
+      setProcessingProgress(550);
+      setProcessingStage('complete');
+      
       setResult(response.data);
     } catch (err) {
       console.error('Error submitting challenge:', err);
       setError('Failed to submit challenge');
+      setProcessingStage('error');
     } finally {
       setSubmitting(false);
     }
   };
+
+  const LoadingOverlay = ({ stage, progress }) => {
+    // Map stages to descriptive messages
+    const stageMessages = {
+      preparing: "Preparing your submission...",
+      capturing: "Capturing your solution...",
+      comparing: "Comparing with reference image and evaluating JavaScript...",
+      complete: "Processing complete!",
+      error: "Error processing submission"
+    };
+  
+    // Default message if stage is not recognized
+    const message = stageMessages[stage] || "Processing...";
+    
+    return (
+      <div className="loading-overlay">
+        <div className="loading-content">
+          <div className="loading-spinner"></div>
+          <h3>{message}</h3>
+          <div className="progress-bar">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${progress}%` }}
+            ></div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  
 
   // Update preview on code change or initial load
   useEffect(() => {
@@ -523,8 +577,15 @@ const AttemptChallenge = () => {
               onClick={handleSubmit}
               disabled={submitting}
             >
-              {submitting ? 'Submitting...' : 'Submit Solution'}
+              {submitting ? 'Processing...' : 'Submit Solution'}
             </button>
+
+            {submitting && processingStage && (
+              <LoadingOverlay 
+                stage={processingStage} 
+                progress={processingProgress} 
+              />
+            )}
           </div>
         </div>
       )}

@@ -38,57 +38,53 @@ const saveBase64Image = (base64Data) => {
 };
 
 // Create a new submission
-router.post('/', async (req, res) => {
+// OPTIONAL: If you want more detailed backend processing feedback
+// Modify your dailySubmissionRoutes.js by adding progress stages in your POST handler
+
+// Add this helper function to your dailySubmissionRoutes.js file
+const processSubmissionWithStages = async (req, res) => {
   try {
     const { challengeId, htmlCode, cssCode, jsCode, outputImage } = req.body;
     
+    // Initial validation
     if (!challengeId || !htmlCode || !cssCode || !outputImage) {
       return res.status(400).json({ message: 'All fields are required' });
     }
     
-    // Get the challenge to access the reference image and challenge details
+    // Get the challenge
     const challenge = await DailyChallenge.findById(challengeId);
-    
     if (!challenge) {
       return res.status(404).json({ message: 'Challenge not found' });
     }
     
-    console.log('Processing submission for challenge:', challenge.title);
-    
     // Save the output image
     const savedImagePath = saveBase64Image(outputImage);
     
-    // Get the full path for both images
+    // Get image paths
     const extractRelativePath = (url) => {
-      // This regex will extract the path part after the domain
       const matches = url.match(/^(?:https?:\/\/[^\/]+)?(.+)$/);
       return matches ? matches[1] : url;
     };
     
-    // Then use it like this
     const imagePath = extractRelativePath(challenge.imageUrl).replace(/^\//, '');
     const referenceImagePath = path.resolve(__dirname, '..', imagePath);
     const submissionImagePath = path.resolve(__dirname, '..', savedImagePath.replace(/^\//, ''));
     
-    console.log('Reference image path:', referenceImagePath);
-    console.log('Submission image path:', submissionImagePath);
-    
-    // Compare the images and get a similarity score
+    // STAGE 1: Compare images
+    console.log('Starting image comparison...');
     const similarityScore = await compareImages(referenceImagePath, submissionImagePath);
-    
-    // Calculate visual score (0-100%)
     const visualScore = Math.max(10, Number((similarityScore * 100).toFixed(2)));
+    console.log('Image comparison complete. Score:', visualScore);
     
-    // Evaluate JavaScript code if provided
+    // STAGE 2: Evaluate JavaScript if provided
     let jsScore = 0;
     let jsEvaluation = "No JavaScript code provided";
     let relevanceScore = 0;
     let relevanceFeedback = [];
     
     if (jsCode && jsCode.trim().length > 0) {
-      console.log('Evaluating JavaScript code...');
+      console.log('Starting JavaScript evaluation...');
       try {
-        // Pass challenge title and description to the evaluator
         const evaluation = await evaluateJavaScriptWithCodeBERT(
           jsCode,
           challenge.title,
@@ -97,8 +93,6 @@ router.post('/', async (req, res) => {
         
         jsScore = Math.max(10, Number((evaluation.score * 100).toFixed(2)));
         jsEvaluation = evaluation.feedback;
-        
-        // Get the relevance score
         relevanceScore = Math.max(0, Number((evaluation.relevanceScore * 100).toFixed(2)));
         relevanceFeedback = evaluation.relevanceFeedback || [];
         
@@ -109,18 +103,16 @@ router.post('/', async (req, res) => {
         });
       } catch (jsError) {
         console.error('Error evaluating JavaScript:', jsError);
-        jsScore = 10; // Minimum score on error
+        jsScore = 10;
         jsEvaluation = `Error evaluating JavaScript: ${jsError.message}`;
       }
     }
     
-    // Calculate overall score
-    // Weighted average: 40% visual, 30% code quality, 30% relevance to challenge
+    // STAGE 3: Calculate overall score and save
     const overallScore = Math.round(
       (0.4 * visualScore) + (0.3 * jsScore) + (0.3 * relevanceScore)
     );
     
-    // Create the submission record with extended fields
     const submission = new DailySubmission({
       challengeId,
       htmlCode,
@@ -137,7 +129,7 @@ router.post('/', async (req, res) => {
     await submission.save();
     
     // Return the result
-    res.status(201).json({
+    return {
       _id: submission._id,
       score: overallScore,
       visualScore: visualScore,
@@ -147,7 +139,18 @@ router.post('/', async (req, res) => {
       relevanceFeedback: relevanceFeedback,
       outputImage: `${req.protocol}://${req.get('host')}${savedImagePath}`,
       submittedAt: submission.submittedAt
-    });
+    };
+  } catch (error) {
+    console.error('Error processing submission:', error);
+    throw error;
+  }
+};
+
+// Then modify your POST route handler to use this function:
+router.post('/', async (req, res) => {
+  try {
+    const result = await processSubmissionWithStages(req, res);
+    res.status(201).json(result);
   } catch (error) {
     console.error('Error creating submission:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
