@@ -24,6 +24,8 @@ import Lesson8 from "./courses/html/lesson-8/Lesson8";
 import Lesson9 from "./courses/html/lesson-9/Lesson9";
 import Lesson10 from "./courses/html/lesson-10/Lesson10";
 import HtmlProject from "./courses/html/html_project/HtmlProject";
+import HtmlProjectHard from "./courses/html/html_project/HtmlProjectHard";
+import HtmlProjectEasy from "./courses/html/html_project/HtmlProjectEasy";
 import Lesson21 from "./courses/css/lesson-21/Lesson21";
 import Lesson21A from "./courses/css/lesson-21/Lesson21A";
 import Lesson22 from "./courses/css/lesson-22/Lesson22";
@@ -119,6 +121,8 @@ function App() {
         <Route path="/lesson9" element={<Lesson9 />} />
         <Route path="/lesson10" element={<Lesson10 />} />
         <Route path="/lesson20" element={<HtmlProject />} />
+        <Route path="/html-proj/challenge" element={<HtmlProjectHard />} />
+        <Route path="/html-proj/easy" element={<HtmlProjectEasy />} />
         <Route path="/lesson21" element={<Lesson21 />} />
         <Route path="/lesson21A" element={<Lesson21A />} />
         <Route path="/lesson22" element={<Lesson22 />} />
