@@ -24,6 +24,7 @@ function VirtualLab() {
   const [collaboratorEmail, setCollaboratorEmail] = useState('');
   const [showCollaboratorInput, setShowCollaboratorInput] = useState(false);
   const [jsErrors, setJsErrors] = useState([]);
+  const [errorTypes, setErrorTypes] = useState([]);
 
   const emitCodeUpdateRef = useRef(
     debounce((roomId, type, content) => {
@@ -318,6 +319,27 @@ function VirtualLab() {
     setTimeout(() => setMessage(''), 3000);
   };
 
+  const logErrorsToServer = async (errors, fileType) => {
+    if (!userId || errors.length === 0) return;
+  
+    try {
+      const errorLogs = errors.map(error => ({
+        timestamp: new Date().toISOString(),
+        errorType: error,
+        fileType: fileType
+      }));
+  
+      await axios.post('http://localhost:4010/error-log/add-error', {
+        userID: userId,
+        errorLogs: errorLogs,
+        lastUpdated: new Date().toISOString()
+      });
+  
+    } catch (error) {
+      console.error('Error logging errors:', error);
+    }
+  };
+
   const detectHtmlErrors = (htmlCode) => {
     try {
       const document = parseFragment(htmlCode); // Parse the HTML as a fragment
@@ -374,8 +396,11 @@ function VirtualLab() {
   const validateHtml = () => {
     const errors = detectHtmlErrors(htmlCode);
     setHtmlErrors(errors);
+    setJsErrors([]);
+    
     if (errors.length > 0) {
-      setMessage(`HTML Errors: ${errors.join(', ')}`);
+      logErrorsToServer(errors, 'HTML');
+      setMessage('HTML validation errors found!');
     } else {
       setMessage('No structural errors found!');
     }
@@ -412,6 +437,7 @@ const handleAddCollaborator = async () => {
 
 
 // Add this validation function
+// Update validateJs function
 const validateJs = async () => {
   try {
     if (!jsCode.trim()) {
@@ -423,22 +449,23 @@ const validateJs = async () => {
       code: jsCode
     });
 
-    console.log('Full API response:', response); 
-    console.log('Response data:', response.data); 
-
+    let errors = [];
     if (response.data.error) {
-      setJsErrors([response.data.error]);
+      errors = [response.data.prediction];
     } else {
-      const { predicted_error, confidence, probabilities } = response.data;
-      const formattedError = `${predicted_error} (${(confidence * 100).toFixed(1)}% confidence)`;
-      const detailedErrors = Object.entries(probabilities).map(([errorType, prob]) => 
-        `${errorType}: ${(prob * 100).toFixed(1)}%`
-      );
-      
-      setJsErrors([formattedError, ...detailedErrors]);
+      errors = [response.data.prediction];
     }
+
+    setJsErrors(errors);
+    setHtmlErrors([]);
     
-    setMessage('JavaScript analysis completed!');
+    if (errors.length > 0) {
+      logErrorsToServer(errors, 'JavaScript');
+      // setMessage('JavaScript errors found!');
+    } else {
+      // setMessage('No JavaScript errors found!');
+    }
+
   } catch (error) {
     setJsErrors(['Error analyzing JavaScript code']);
     console.error('JS validation error:', error);
@@ -497,6 +524,58 @@ const handleExpandedState = (editor, isExpanded) => {
     [editor]: isExpanded
   }));
 };
+
+const fetchErrorTypes = async (userId) => {
+  if (!userId) {
+    console.error("User ID is required to fetch error types.");
+    return;
+  }
+
+  try {
+    const response = await axios.get(`http://localhost:4010/error-log/error-types/${userId}`);
+    if (response.status === 200) {
+      // console.log("Error Types:", response.data.errorTypes);
+      setErrorTypes(response.data.errorTypes);
+      console.log("Error Types:", errorTypes);
+    } else {
+      console.log("Failed to fetch error types. Status:", response.status);
+    }
+  } catch (error) {
+    console.error("Error fetching error types:", error);
+  }
+};
+
+useEffect(() => {
+  if (userId) {
+    fetchErrorTypes(userId);
+  }
+}, [userId]);
+
+const getPredictedErrors = async () => {
+  if (errorTypes.length === 0) {
+    console.error("Error Types array is empty. Cannot send prediction request.");
+    return;
+  }
+
+  try {
+    const response = await axios.post(
+      "http://localhost:5010/predict",{
+        errors: errorTypes, // Send errorTypes as the input
+      });
+
+    if (response.status === 200) {
+      console.log("Predicted Errors:", response.data.predictions);
+    } else {
+      console.error("Failed to get predictions. Status:", response.status);
+    }
+  } catch (error) {
+    console.error("Error fetching predictions:", error.response?.data || error.message);
+  }
+};
+
+console.log("Error Types Array:", errorTypes);
+console.log("Is Array:", Array.isArray(errorTypes));
+console.log("All Strings:", errorTypes.every((item) => typeof item === "string"));
 
   return (
     <div className="virtual-lab-main-container">
@@ -655,6 +734,7 @@ const handleExpandedState = (editor, isExpanded) => {
           <button onClick={validateJs} className="validate-button">
             Analyze JavaScript
           </button>
+          <button onClick={getPredictedErrors}>Get Predicted Errors</button>
           {currentSnippetId && (
             <button 
               onClick={() => setShowCollaboratorInput(!showCollaboratorInput)}
@@ -678,21 +758,42 @@ const handleExpandedState = (editor, isExpanded) => {
               >
                 Add
               </button>
+              
             </div>
           )}
         </div>
 
-          <div className="html-errors">
-          <h3>Validation Errors:</h3>
-          {htmlErrors.length > 0 ? (
-            <ul>
-              {htmlErrors.map((error, index) => (
-                <li key={index}>{error}</li>
-              ))}
-            </ul>
-          ) : (
-            <p>No errors found.</p>
-          )}
+        <div className="html-errors">
+            <h3>Validation Errors:</h3>
+            
+            {/* HTML Errors */}
+            {htmlErrors.length > 0 && (
+              <>
+                <h4>HTML Errors:</h4>
+                <ul>
+                  {htmlErrors.map((error, index) => (
+                    <li key={`html-${index}`}>{error}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {/* JavaScript Errors */}
+            {jsErrors.length > 0 && (
+              <>
+                <h4>JavaScript Errors:</h4>
+                <ul>
+                  {jsErrors.map((error, index) => (
+                    <li key={`js-${index}`}>{error}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {/* No errors message */}
+            {htmlErrors.length === 0 && jsErrors.length === 0 && (
+              <p>No errors found.</p>
+            )}
         </div>
 
         </div>  

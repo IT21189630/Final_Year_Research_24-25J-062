@@ -31,4 +31,33 @@ const addErrorLog = async (req, res) => {
     }
 };
 
-module.exports = { addErrorLog };
+
+const getErrorTypesByUserID = async (req, res) => {
+    try {
+        const { userID } = req.params;
+
+        if (!userID) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
+        // Find the user's error logs
+        const userErrorLog = await ErrorLog.findOne({ userID: userID }, { "errorLogs.errorType": 1, _id: 0 });
+
+        if (!userErrorLog) {
+            return res.status(404).json({ message: "No error logs found for the given user ID" });
+        }
+
+        // Extract all error types
+        const errorTypes = userErrorLog.errorLogs.map(log => log.errorType);
+
+        return res.status(200).json({ userID, errorTypes });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+module.exports = { addErrorLog, getErrorTypesByUserID };
+
+
