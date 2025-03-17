@@ -13,6 +13,10 @@ const dailyChallengeSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  jscode: {
+    type: String,
+    required: true
+  },
   imageUrl: {
     type: String,
     required: true

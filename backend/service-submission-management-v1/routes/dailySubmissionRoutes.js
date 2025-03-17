@@ -57,6 +57,13 @@ const processSubmissionWithStages = async (req, res) => {
       return res.status(404).json({ message: 'Challenge not found' });
     }
     
+    // Log the challenge data to verify we have the solution
+    console.log(`Challenge ${challenge._id} retrieved:`, {
+      title: challenge.title,
+      hasJsCode: Boolean(challenge.jscode),
+      jsCodeLength: challenge.jscode?.length || 0
+    });
+    
     // Save the output image
     const savedImagePath = saveBase64Image(outputImage);
     
@@ -79,39 +86,63 @@ const processSubmissionWithStages = async (req, res) => {
     // STAGE 2: Evaluate JavaScript if provided
     let jsScore = 0;
     let jsEvaluation = "No JavaScript code provided";
-    let relevanceScore = 0;
-    let relevanceFeedback = [];
+    let correctnessScore = 0;
     
     if (jsCode && jsCode.trim().length > 0) {
       console.log('Starting JavaScript evaluation...');
       try {
+        // Make sure we have a solution to compare against
+        const solutionCode = challenge.jscode && challenge.jscode.trim() !== "" 
+          ? challenge.jscode 
+          : "// No reference solution provided";
+          
+        console.log('Solution code length:', solutionCode.length);
+        console.log('User code length:', jsCode.length);
+        
+        // Pass the correct solution from the challenge model
         const evaluation = await evaluateJavaScriptWithCodeBERT(
           jsCode,
           challenge.title,
-          challenge.description
+          challenge.description,
+          solutionCode // Pass the correct solution
         );
         
-        jsScore = Math.max(10, Number((evaluation.score * 100).toFixed(2)));
-        jsEvaluation = evaluation.feedback;
-        relevanceScore = Math.max(0, Number((evaluation.relevanceScore * 100).toFixed(2)));
-        relevanceFeedback = evaluation.relevanceFeedback || [];
+        // Log the raw evaluation result to debug
+        console.log('Raw evaluation result:', JSON.stringify(evaluation));
         
-        console.log('JavaScript evaluation complete:', {
-          score: jsScore,
-          relevance: relevanceScore,
-          feedback: jsEvaluation.substring(0, 100) + '...'
+        // Use the score directly from the evaluation result
+        jsScore = evaluation.score* 100; // The Python code now returns percentage with decimals
+       
+      // Get correctness score - if it's 0 but we have a quality score, use a decimal minimum value
+        correctnessScore = evaluation.correctnessScore ?
+        evaluation.correctnessScore* 100 : // Already a percentage with decimals
+        (jsScore > 20.5 ? 20.5 : jsScore);
+        
+        jsEvaluation = evaluation.feedback;
+        
+        console.log('JavaScript evaluation processed:', {
+          jsScore,
+          correctnessScore,
+          feedbackLength: jsEvaluation.length
         });
       } catch (jsError) {
         console.error('Error evaluating JavaScript:', jsError);
         jsScore = 10;
+        correctnessScore = 10;
         jsEvaluation = `Error evaluating JavaScript: ${jsError.message}`;
       }
     }
     
-    // STAGE 3: Calculate overall score and save
-    const overallScore = Math.round(
-      (0.4 * visualScore) + (0.3 * jsScore) + (0.3 * relevanceScore)
+    // STAGE 3: Calculate overall score
+    const overallScore = (
+      (0.4 * visualScore) + (0.3 * jsScore) + (0.3 * correctnessScore)
     );
+    console.log('Final scores:', {
+      visualScore,
+      jsScore,
+      correctnessScore,
+      overallScore
+    });
     
     const submission = new DailySubmission({
       challengeId,
@@ -119,24 +150,22 @@ const processSubmissionWithStages = async (req, res) => {
       cssCode,
       jsCode,
       outputImage: savedImagePath,
-      visualScore: visualScore,
-      jsScore: jsScore,
-      relevanceScore: relevanceScore,
+      visualScore: visualScore, // Keep original decimal value from Python
+      jsScore: jsScore, // Keep original decimal value from Python
+      correctnessScore: correctnessScore, // Keep original decimal value from Python
       jsEvaluation: jsEvaluation,
-      score: overallScore
+      score: overallScore // Keep calculated decimal value
     });
     
     await submission.save();
     
-    // Return the result
     return {
       _id: submission._id,
       score: overallScore,
       visualScore: visualScore,
       jsScore: jsScore,
-      relevanceScore: relevanceScore,
+      correctnessScore: correctnessScore,
       jsEvaluation: jsEvaluation,
-      relevanceFeedback: relevanceFeedback,
       outputImage: `${req.protocol}://${req.get('host')}${savedImagePath}`,
       submittedAt: submission.submittedAt
     };
@@ -145,6 +174,8 @@ const processSubmissionWithStages = async (req, res) => {
     throw error;
   }
 };
+
+
 
 // Then modify your POST route handler to use this function:
 router.post('/', async (req, res) => {

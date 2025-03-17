@@ -89,36 +89,52 @@ async function compareImagesWithResNet(image1Path, image2Path) {
  * @param {string} jsCode - JavaScript code to evaluate
  * @param {string} challengeTitle - The title of the challenge (optional)
  * @param {string} challengeDescription - The description of the challenge (optional)
+ * @param {string} correctSolution - The correct solution to compare against (optional)
  * @returns {Promise<Object>} - Evaluation results with score and feedback
  */
-async function evaluateJavaScriptWithCodeBERT(jsCode, challengeTitle = "", challengeDescription = "") {
+async function evaluateJavaScriptWithCodeBERT(
+  jsCode, 
+  challengeTitle = "", 
+  challengeDescription = "", 
+  correctSolution = ""
+) {
   try {
     const scriptPath = path.join(__dirname, 'js_code_evaluator.py');
     
     const result = await executePythonScript(scriptPath, {
       jsCode: jsCode,
       challengeTitle: challengeTitle,
-      challengeDescription: challengeDescription
+      challengeDescription: challengeDescription,
+      correctSolution: correctSolution // Pass the correct solution to Python
+    });
+    
+    // Ensure we're working with numeric values
+    const correctnessScore = result.correctness_score ? parseFloat(result.correctness_score) / 100 : 0;
+    const finalScore = result.score ? parseFloat(result.score) / 100 : 0;
+    
+    console.log('Python evaluation result:', {
+      originalScore: result.score,
+      originalCorrectnessScore: result.correctness_score,
+      calculatedScore: finalScore,
+      calculatedCorrectnessScore: correctnessScore
     });
     
     return {
-      score: result.score / 100, // Convert percentage to 0-1 scale to match image comparison
-      relevanceScore: result.relevance_score ? result.relevance_score / 100 : 0,
+      score: finalScore,
+      correctnessScore: correctnessScore,
       feedback: result.feedback,
-      relevanceFeedback: result.relevance_feedback || [],
       details: {
         syntax_valid: result.syntax_valid,
         metrics: result.metrics,
-        issues: result.issues
+        issues: result.issues || []
       }
     };
   } catch (error) {
     console.error('Error evaluating JavaScript with CodeBERT:', error);
     return {
       score: 0,
-      relevanceScore: 0,
+      correctnessScore: 0,
       feedback: `Evaluation error: ${error.message}`,
-      relevanceFeedback: [],
       details: {
         syntax_valid: false,
         metrics: {},

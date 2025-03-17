@@ -414,7 +414,18 @@ const AttemptChallenge = () => {
 
   return (
     <div className="attempt-challenge-container">
-      <h1 className="challenge-title">Attempt Challenge: {challenge.title}</h1>
+      <div className="title-container">
+        <button 
+          className="back-button" 
+          onClick={() => navigate('/today-challenge')}
+          aria-label="Back to Today's Challenge"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h1 className="challenge-title">Attempt Challenge: {challenge.title}</h1>
+      </div>
       
       {result ? (
         <div className="submission-result">
@@ -423,7 +434,7 @@ const AttemptChallenge = () => {
             <div className="score-display">
               <h3>Overall Score</h3>
               <div className="score-circle" style={{'--score': `${result.score}%`}}>
-                <span className="score-value">{result.score}%</span>
+                <span className="score-value">{result.score.toFixed(2)}%</span>
               </div>
             </div>
             
@@ -431,23 +442,21 @@ const AttemptChallenge = () => {
               <div className="score-item">
                 <h3>Visual Score</h3>
                 <div className="score-pill">
-                  <span>{result.visualScore}%</span>
+                  <span>{result.visualScore.toFixed(2)}%</span>
+                </div>
+              </div>
+              <div className="score-item">
+                <h3>JS Correctness</h3>
+                <div className="score-pill">
+                  <span>{result.correctnessScore.toFixed(2)}%</span>
                 </div>
               </div>
               <div className="score-item">
                 <h3>JS Quality</h3>
                 <div className="score-pill">
-                  <span>{result.jsScore}%</span>
+                  <span>{result.jsScore.toFixed(2)}%</span>
                 </div>
               </div>
-              {result.relevanceScore !== undefined && (
-                <div className="score-item">
-                  <h3>Challenge Relevance</h3>
-                  <div className="score-pill">
-                    <span>{result.relevanceScore}%</span>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
           

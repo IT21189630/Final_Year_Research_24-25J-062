@@ -1,10 +1,12 @@
 // TodayChallenge.jsx
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import './TodayChallenge.css';
 
 const TodayChallenge = () => {
+  const navigate = useNavigate();
   const [challenge, setChallenge] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,7 +61,19 @@ const TodayChallenge = () => {
 
   return (
     <div className="today-challenge-container">
-      <h1 className="challenge-title">Today's Challenge</h1>
+      <div className="title-container">
+        <button 
+          className="back-button" 
+          onClick={() => navigate('/student/dashboard/')}
+          aria-label="Back to Today's Challenge"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <h1 className="challenge-title">Today's Challenge</h1>
+      </div>
+      
       
       <div className="challenge-card">
         <div className="challenge-header">

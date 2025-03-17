@@ -9,6 +9,7 @@ const CreateDailyChallenge = () => {
     date: new Date(),
     title: '',
     description: '',
+    jscode: ''
   });
   const [image, setImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState('');
@@ -59,6 +60,7 @@ const CreateDailyChallenge = () => {
       data.append('title', formData.title);
       data.append('description', formData.description);
       data.append('image', image);
+      data.append('jscode', formData.jscode);
 
       const response = await axios.post('http://localhost:5000/api/dailychallenge', data, {
         headers: {
@@ -72,6 +74,7 @@ const CreateDailyChallenge = () => {
           date: new Date(),
           title: '',
           description: '',
+          jscode:''
         });
         setImage(null);
         setPreviewUrl('');
@@ -132,6 +135,19 @@ const CreateDailyChallenge = () => {
             className="form-control"
             rows="5"
             placeholder="Enter challenge description"
+          />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="jscode">JS Code</label>
+          <textarea
+            id="jscode"
+            name="jscode"
+            value={formData.jscode}
+            onChange={handleChange}
+            className="form-control"
+            rows="5"
+            placeholder="Enter js code"
           />
         </div>
         

@@ -802,3 +802,64 @@
   40% { content: '..'; }
   60%, 100% { content: '...'; }
 }
+
+
+/* Add these styles to your AttemptChallenge.css file */
+
+.title-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-right: 15px;
+  color: #333;
+  transition: background-color 0.2s, color 0.2s;
+  padding: 8px;
+}
+
+.back-button:hover {
+  background-color: #f0f0f0;
+  color: #000;
+}
+
+.back-button:active {
+  background-color: #e0e0e0;
+  transform: scale(0.95);
+}
+
+.back-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Adjust the existing challenge-title to work with the new layout */
+.challenge-title {
+  margin: 0;
+  flex: 1;
+}
+
+/* Make sure the back button is visible on mobile */
+@media (max-width: 768px) {
+  .back-button {
+    width: 36px;
+    height: 36px;
+    margin-right: 10px;
+  }
+  
+  .back-button svg {
+    width: 20px;
+    height: 20px;
+  }
+}

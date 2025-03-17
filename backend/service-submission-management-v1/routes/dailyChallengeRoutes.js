@@ -32,7 +32,7 @@ const upload = multer({
 // Create a new daily challenge
 router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const { date, title, description } = req.body;
+    const { date, title, description, jscode } = req.body;
     
     if (!date || !title || !description || !req.file) {
       return res.status(400).json({ message: 'All fields are required' });
@@ -44,6 +44,7 @@ router.post('/', upload.single('image'), async (req, res) => {
       date,
       title,
       description,
+      jscode,
       imageUrl
     });
 
