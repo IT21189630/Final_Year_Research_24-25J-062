@@ -25,6 +25,7 @@ import Lesson9 from "./courses/html/lesson-9/Lesson9";
 import Lesson10 from "./courses/html/lesson-10/Lesson10";
 import HtmlProject from "./courses/html/html_project/HtmlProject";
 import Lesson21 from "./courses/css/lesson-21/Lesson21";
+import Lesson21A from "./courses/css/lesson-21/Lesson21A";
 import Lesson22 from "./courses/css/lesson-22/Lesson22";
 import Lesson23 from "./courses/css/lesson-23/Lesson-23";
 import Lesson24 from "./courses/css/lesson-24/Lesson24";
@@ -60,7 +61,7 @@ function App() {
         {/* admin page routes */}
         <Route path="/admin/dashboard" element={<AdminProtectedRoute />}>
           <Route path="/admin/dashboard/" element={<AdminDashboard />}>
-            <Route path="/admin/dashboard/" element={<MarkupAdmin />} />
+            <Route path="/admin/dashboard/" element={<CreateLesson />} />
             <Route
               path="/admin/dashboard/create_lesson"
               element={<CreateLesson />}
@@ -119,6 +120,7 @@ function App() {
         <Route path="/lesson10" element={<Lesson10 />} />
         <Route path="/lesson20" element={<HtmlProject />} />
         <Route path="/lesson21" element={<Lesson21 />} />
+        <Route path="/lesson21A" element={<Lesson21A />} />
         <Route path="/lesson22" element={<Lesson22 />} />
         <Route path="/lesson23" element={<Lesson23 />} />
         <Route path="/lesson24" element={<Lesson24 />} />

@@ -14,7 +14,11 @@ function Milestone(props) {
   const navigate = useNavigate();
 
   const lessonNavigator = (URL, lessonId) => {
-    navigate(URL);
+    if (current_level > level && URL.length > 1) {
+      navigate(URL[1]);
+    } else {
+      navigate(URL[0]);
+    }
     dispatch(
       mountLesson({
         lesson_id: lessonId,

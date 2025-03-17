@@ -51,8 +51,11 @@ function EnrollmentCard(props) {
               <HiSparkles className="spark" />
               Course Progress:{" "}
               <span className="curr-progress">
-                Completed {current_level - 1} out of{" "}
-                {lessons[lessons.length - 1].level}
+                Completed{" "}
+                {lessons[lessons.length - 1].level < current_level - 1
+                  ? lessons[lessons.length - 1].level
+                  : current_level - 1}{" "}
+                out of {lessons[lessons.length - 1].level}
               </span>
             </span>
             <div className="enr-progress-bar-cont">

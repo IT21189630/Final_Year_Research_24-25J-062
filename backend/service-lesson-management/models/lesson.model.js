@@ -11,8 +11,12 @@ const lessonSchema = mongoose.Schema(
       required: [true, "Level number is required!"],
     },
     url: {
-      type: String,
-      required: [true, "Valid lesson url required!"],
+      type: [String],
+      required: [true, "At least one valid lesson URL is required!"],
+      validate: {
+        validator: (arr) => arr.length > 0,
+        message: "At least one URL must be provided!",
+      },
     },
     description: {
       type: String,

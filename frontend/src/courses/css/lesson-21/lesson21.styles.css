@@ -271,3 +271,21 @@
   transform: rotate(-45deg);
   right: 100px;
 }
+
+.crew-member {
+  width: 150px;
+}
+
+.badge-container {
+  width: 250px;
+  height: 250px;
+  background-color: silver;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.badge-content {
+  scale: 0.8;
+}

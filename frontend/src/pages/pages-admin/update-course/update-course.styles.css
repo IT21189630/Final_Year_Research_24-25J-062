@@ -173,7 +173,8 @@
 
 .add-lesson-btn,
 .remove-lesson-btn {
-  padding: 8px 15px;
+  padding: 3px 15px;
+  border-radius: 10px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -250,12 +251,13 @@
 }
 
 .remove-lesson-btn {
-  background-color: var(--cosmic-red);
+  background-color: var(--crimson-red);
   color: white;
+  scale: 0.8;
 }
 
 .remove-lesson-btn:hover {
-  background-color: #c0392b;
+  background-color: var(--crimson-red);
 }
 
 .no-lessons {
@@ -266,11 +268,11 @@
 
 .update-course-error {
   background-color: #fff0f0;
-  color: var(--cosmic-red);
+  color: var(--crimson-red);
   padding: 12px;
   border-radius: 4px;
   margin-bottom: 20px;
-  border-left: 4px solid var(--cosmic-red);
+  border-left: 4px solid var(--crimson-red);
 }
 
 .update-course-success {

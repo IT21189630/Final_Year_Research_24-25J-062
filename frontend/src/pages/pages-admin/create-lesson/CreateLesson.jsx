@@ -17,7 +17,7 @@ const CreateLesson = () => {
 
   const [formData, setFormData] = useState({
     title: "",
-    url: "",
+    url: [""],
     description: "",
     level: 1,
   });
@@ -37,24 +37,64 @@ const CreateLesson = () => {
     });
   };
 
+  const handleUrlChange = (index, value) => {
+    const updatedUrls = [...formData.url];
+    updatedUrls[index] = value;
+    setFormData({
+      ...formData,
+      url: updatedUrls,
+    });
+  };
+
+  const addUrlField = () => {
+    setFormData({
+      ...formData,
+      url: [...formData.url, ""],
+    });
+  };
+
+  const removeUrlField = (index) => {
+    if (formData.url.length > 1) {
+      const updatedUrls = formData.url.filter((_, i) => i !== index);
+      setFormData({
+        ...formData,
+        url: updatedUrls,
+      });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const validUrls = formData.url.filter((url) => url.trim() !== "");
+    if (validUrls.length === 0) {
+      setMessage("Error: At least one valid URL is required.");
+      return;
+    }
+
     setIsSubmitting(true);
     setMessage("");
+
+    const submissionData = {
+      ...formData,
+      url: validUrls,
+    };
 
     try {
       const response = await axiosInstanceLessonMangement.post(
         "/lessons",
-        formData
+        submissionData
       );
       if (response.data) {
         setMessage("Lesson created successfully!");
         setFormData({
           title: "",
-          url: "",
+          url: [""],
           description: "",
           level: 1,
         });
+        // Refresh the lessons list
+        getAllLessons();
       }
     } catch (error) {
       setMessage(`Error creating lesson: ${error.message}`);
@@ -97,18 +137,40 @@ const CreateLesson = () => {
           </div>
 
           <div className="lesson-form-field">
-            <label htmlFor="lesson-url" className="lesson-form-label">
-              URL
-            </label>
-            <input
-              type="text"
-              id="lesson-url"
-              name="url"
-              className="lesson-form-input"
-              value={formData.url}
-              onChange={handleChange}
-              required
-            />
+            <label className="lesson-form-label">URLs</label>
+            {formData.url.map((url, index) => (
+              <div key={index} className="lesson-url-input-group">
+                <input
+                  type="text"
+                  className="lesson-form-input"
+                  value={url}
+                  onChange={(e) => handleUrlChange(index, e.target.value)}
+                  placeholder="Enter URL"
+                  required={index === 0} // Only the first URL is required
+                />
+                <div className="lesson-url-buttons">
+                  <button
+                    type="button"
+                    className="url-add-button"
+                    onClick={addUrlField}
+                  >
+                    +
+                  </button>
+                  {formData.url.length > 1 && (
+                    <button
+                      type="button"
+                      className="url-remove-button"
+                      onClick={() => removeUrlField(index)}
+                    >
+                      -
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+            <span className="lesson-form-hint">
+              Add one or more URLs for this lesson
+            </span>
           </div>
 
           <div className="lesson-form-field">
@@ -159,15 +221,36 @@ const CreateLesson = () => {
               <div key={lesson._id} className="recent-lesson-item">
                 <h4 className="recent-lesson-title">{lesson.title}</h4>
                 <div className="recent-lesson-level">Level: {lesson.level}</div>
-                <div className="recent-lesson-url">
-                  <a
-                    href={lesson.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    View Lesson
-                  </a>
-                </div>
+                {lesson.url ? (
+                  <div className="recent-lesson-urls">
+                    <span className="recent-lesson-urls-label">
+                      Description:
+                    </span>
+                    {/* <ul className="recent-lesson-url-list">
+                      {lesson.url.map((url, index) => (
+                        <li key={index} className="recent-lesson-url-item">
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Resource {index + 1}
+                          </a>
+                        </li>
+                      ))}
+                    </ul> */}
+                  </div>
+                ) : (
+                  <div className="recent-lesson-url">
+                    <a
+                      href={lesson.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View Lesson
+                    </a>
+                  </div>
+                )}
                 <p className="recent-lesson-description">
                   {lesson.description}
                 </p>
