@@ -7,8 +7,8 @@ import "./milestone.styles.css";
 
 function Milestone(props) {
   const { current_level } = useSelector((state) => state.progress);
-  const { level, url, _id } = props;
-  const lock = current_level < level;
+  const { level, url, _id, index } = props;
+  const lock = current_level < level && index !== 0;
   const dispatch = useDispatch();
 
   const navigate = useNavigate();

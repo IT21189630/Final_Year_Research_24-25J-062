@@ -60,7 +60,7 @@ function LevelDisplayer() {
             <div className="level-displayer">
               {course.lessons?.length > 0 ? (
                 course.lessons.map((lesson, index) => (
-                  <Milestone key={index} {...lesson} />
+                  <Milestone key={index} {...lesson} index={index} />
                 ))
               ) : (
                 <div>No lessons available.</div>
