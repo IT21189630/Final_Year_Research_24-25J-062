@@ -296,3 +296,129 @@
 		min-width: 100%;
 	}
 }
+
+.store-section {
+	background-color: #fff;
+	border-radius: 10px;
+	padding: 20px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	margin-top: 30px;
+}
+
+.store-description {
+	color: #666;
+	margin-bottom: 20px;
+}
+
+.store-items {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	gap: 15px;
+}
+
+.store-item {
+	background-color: #f8f9fa;
+	border-radius: 10px;
+	padding: 15px;
+	display: flex;
+	align-items: center;
+	transition: all 0.3s ease;
+	border-left: 4px solid var(--crimson-red);
+}
+
+.store-item:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.store-item-icon {
+	width: 50px;
+	height: 50px;
+	border-radius: 10px;
+	background-color: var(--evening-blue);
+	color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 1.5rem;
+	margin-right: 15px;
+	flex-shrink: 0;
+}
+
+.store-item-details {
+	flex: 1;
+}
+
+.store-item-details h3 {
+	margin: 0 0 5px 0;
+	font-size: 1rem;
+	color: #333;
+}
+
+.store-item-details p {
+	margin: 0;
+	font-size: 0.85rem;
+	color: #666;
+}
+
+.store-item-price {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-left: 15px;
+}
+
+.store-item-price span {
+	display: flex;
+	align-items: center;
+	font-weight: 600;
+	color: #333;
+	margin-bottom: 8px;
+}
+
+.coin-icon {
+	color: #f1c40f;
+	margin-left: 5px;
+	font-size: 0.9rem;
+}
+
+.buy-button {
+	background-color: var(--crimson-red);
+	color: white;
+	border: none;
+	border-radius: 5px;
+	padding: 5px 15px;
+	font-size: 0.9rem;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.buy-button:hover {
+	background-color: #e6183f;
+}
+
+@media (max-width: 768px) {
+	.store-items {
+		grid-template-columns: 1fr;
+	}
+
+	.store-item {
+		flex-wrap: wrap;
+	}
+
+	.store-item-icon {
+		margin-right: 10px;
+	}
+
+	.store-item-price {
+		width: 100%;
+		flex-direction: row;
+		justify-content: space-between;
+		margin-left: 0;
+		margin-top: 10px;
+	}
+
+	.store-item-price span {
+		margin-bottom: 0;
+	}
+}

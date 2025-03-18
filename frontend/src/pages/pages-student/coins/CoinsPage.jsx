@@ -5,7 +5,17 @@ import "./coins.css";
 import LoadingScreen from "../../../components/loading-screen/LoadingScreen";
 import ErrorPage from "../../error-page/ErrorPage";
 import axiosInstanceGamification from "../../../axios/axiosInstanceGamification";
-import { FaCoins, FaTrophy, FaExchangeAlt } from "react-icons/fa";
+import {
+	FaCoins,
+	FaTrophy,
+	FaExchangeAlt,
+	FaLightbulb,
+	FaBook,
+	FaRocket,
+	FaPalette,
+	FaGift,
+	FaCrown,
+} from "react-icons/fa";
 import { formatDistanceToNow } from "date-fns";
 
 function CoinsPage() {
@@ -111,6 +121,40 @@ function CoinsPage() {
 		} finally {
 			setConvertingXp(false);
 		}
+	};
+
+	// Handle item purchase
+	const handlePurchase = (itemName, price, icon) => {
+		// Check if user has enough coins
+		if (wallet?.coinBalance < price) {
+			toast.error(
+				"Not enough coins! Complete more lessons to earn XP and convert to coins."
+			);
+			return;
+		}
+
+		// Simulate purchase
+		const newWallet = {
+			...wallet,
+			coinBalance: wallet.coinBalance - price,
+			transactions: [
+				{
+					type: "PURCHASE",
+					coinAmount: -price,
+					description: `Purchased ${itemName}`,
+					timestamp: new Date(),
+				},
+				...wallet.transactions,
+			],
+		};
+
+		// Update wallet state
+		setWallet(newWallet);
+
+		// Show success toast
+		toast.success(`${itemName} purchased successfully!`, {
+			icon: icon,
+		});
 	};
 
 	useEffect(() => {
@@ -270,6 +314,176 @@ function CoinsPage() {
 							No transactions yet
 						</div>
 					)}
+				</div>
+
+				<div className="store-section">
+					<h2 className="section-title">Game Store</h2>
+					<p className="store-description">
+						Spend your hard-earned coins on various items to enhance
+						your learning experience!
+					</p>
+
+					<div className="store-items">
+						<div className="store-item">
+							<div className="store-item-icon">
+								<FaLightbulb />
+							</div>
+							<div className="store-item-details">
+								<h3>20 Lesson Hints</h3>
+								<p>
+									Get unstuck with hints for difficult
+									challenges
+								</p>
+							</div>
+							<div className="store-item-price">
+								<span>
+									1 <FaCoins className="coin-icon" />
+								</span>
+								<button
+									className="buy-button"
+									onClick={() =>
+										handlePurchase(
+											"20 Lesson Hints",
+											1,
+											"💡"
+										)
+									}
+								>
+									Buy
+								</button>
+							</div>
+						</div>
+
+						<div className="store-item">
+							<div className="store-item-icon">
+								<FaBook />
+							</div>
+							<div className="store-item-details">
+								<h3>Advanced Tutorial</h3>
+								<p>Access premium learning material</p>
+							</div>
+							<div className="store-item-price">
+								<span>
+									5 <FaCoins className="coin-icon" />
+								</span>
+								<button
+									className="buy-button"
+									onClick={() =>
+										handlePurchase(
+											"Advanced Tutorial",
+											5,
+											"📚"
+										)
+									}
+								>
+									Buy
+								</button>
+							</div>
+						</div>
+
+						<div className="store-item">
+							<div className="store-item-icon">
+								<FaRocket />
+							</div>
+							<div className="store-item-details">
+								<h3>2× XP Booster (1 day)</h3>
+								<p>Double your XP earnings for 24 hours</p>
+							</div>
+							<div className="store-item-price">
+								<span>
+									10 <FaCoins className="coin-icon" />
+								</span>
+								<button
+									className="buy-button"
+									onClick={() =>
+										handlePurchase(
+											"2× XP Booster (1 day)",
+											10,
+											"🚀"
+										)
+									}
+								>
+									Buy
+								</button>
+							</div>
+						</div>
+
+						<div className="store-item">
+							<div className="store-item-icon">
+								<FaPalette />
+							</div>
+							<div className="store-item-details">
+								<h3>Custom Theme</h3>
+								<p>Personalize your learning environment</p>
+							</div>
+							<div className="store-item-price">
+								<span>
+									15 <FaCoins className="coin-icon" />
+								</span>
+								<button
+									className="buy-button"
+									onClick={() =>
+										handlePurchase("Custom Theme", 15, "🎨")
+									}
+								>
+									Buy
+								</button>
+							</div>
+						</div>
+
+						<div className="store-item">
+							<div className="store-item-icon">
+								<FaCrown />
+							</div>
+							<div className="store-item-details">
+								<h3>Exclusive Avatar</h3>
+								<p>
+									Stand out on the leaderboard with a special
+									profile picture
+								</p>
+							</div>
+							<div className="store-item-price">
+								<span>
+									25 <FaCoins className="coin-icon" />
+								</span>
+								<button
+									className="buy-button"
+									onClick={() =>
+										handlePurchase(
+											"Exclusive Avatar",
+											25,
+											"👑"
+										)
+									}
+								>
+									Buy
+								</button>
+							</div>
+						</div>
+
+						<div className="store-item">
+							<div className="store-item-icon">
+								<FaGift />
+							</div>
+							<div className="store-item-details">
+								<h3>Mystery Box</h3>
+								<p>Contains a random reward of varying value</p>
+							</div>
+							<div className="store-item-price">
+								<span>
+									8 <FaCoins className="coin-icon" />
+								</span>
+								<button
+									className="buy-button"
+									onClick={() =>
+										handlePurchase("Mystery Box", 8, "🎁")
+									}
+								>
+									Buy
+								</button>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
