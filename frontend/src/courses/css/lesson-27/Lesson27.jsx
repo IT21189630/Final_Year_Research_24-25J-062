@@ -17,7 +17,7 @@ import PerformanceSummaryModal from "../../../components/performance-summary-mod
 
 function Lesson27() {
   const dispatch = useDispatch();
-  const { course_id } = useSelector((state) => state.progress);
+  const { course_id, current_level } = useSelector((state) => state.progress);
   const { user_id } = useSelector((state) => state.user);
   const { lesson_id } = useSelector((state) => state.lesson);
 
@@ -257,7 +257,7 @@ function Lesson27() {
         });
         setPerformanceScore(score);
         setShowModal(true);
-        const nextLevel = 28;
+        const nextLevel = current_level > 28 ? current_level : 28;
         const updateFlag = await updateCourseProgress(
           user_id,
           course_id,

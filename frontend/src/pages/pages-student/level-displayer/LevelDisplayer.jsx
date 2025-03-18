@@ -25,7 +25,9 @@ function LevelDisplayer() {
       if (response.data) {
         setCourse(response.data);
         setProgressPercentage(
-          ((current_level - 1) / response.data.lessons.length) * 100
+          ((current_level - 1) /
+            response.data.lessons[response.data.lessons.length - 1].level) *
+            100
         );
         setLoading(false);
         toast.success("Your progress levels fetched!");

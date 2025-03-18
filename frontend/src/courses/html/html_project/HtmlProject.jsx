@@ -10,6 +10,7 @@ import AstronautGuider from "../../../images/lessons/motive-image.png";
 import AstroHeadshot from "../../../images/lessons/astro-headshot.png";
 import Timer from "../../../components/timer/Timer";
 import { useSelector, useDispatch } from "react-redux";
+import { recommendationEngine } from "../../../components/course-progress-updater/RecommendationEngine";
 import { updateProgress } from "../../../features/Progress.slice";
 import { updateCourseProgress } from "../../../components/course-progress-updater/CourseProgressUpdater";
 import { IoMdTimer } from "react-icons/io";
@@ -21,7 +22,7 @@ import PerformanceSummaryModal from "../../../components/performance-summary-mod
 
 function HtmlProject() {
   const dispatch = useDispatch();
-  const { course_id } = useSelector((state) => state.progress);
+  const { course_id, current_level } = useSelector((state) => state.progress);
   const { user_id } = useSelector((state) => state.user);
   const { lesson_id } = useSelector((state) => state.lesson);
 
@@ -187,7 +188,8 @@ function HtmlProject() {
         });
         setPerformanceScore(score);
         setShowModal(true);
-        const nextLevel = 20;
+        const nextLevel = current_level > 21 ? current_level : 21;
+        recommendationEngine(score, "HTML-101", "five", user_id);
         const updateFlag = await updateCourseProgress(
           user_id,
           course_id,

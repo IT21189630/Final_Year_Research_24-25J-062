@@ -134,10 +134,10 @@ const CreateRecommendation = () => {
                 required
               >
                 <option value="">Select Lesson Type</option>
-                <option value="video">Video</option>
-                <option value="article">Article</option>
-                <option value="interactive">Interactive</option>
-                <option value="exercise">Exercise</option>
+                <option value="Mini-Project (Easy)">Mini-Project (Easy)</option>
+                <option value="Mini-Project (Hard)">Mini-Project (Hard)</option>
+                <option value="Quiz">Quiz</option>
+                <option value="Exercise">Exercise</option>
                 <option value="other">Other</option>
               </select>
             </div>

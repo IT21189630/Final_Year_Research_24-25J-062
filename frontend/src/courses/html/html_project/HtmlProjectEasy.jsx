@@ -19,7 +19,7 @@ import "./html_project.styles.css";
 
 function HtmlProjectEasy() {
   const dispatch = useDispatch();
-  const { course_id } = useSelector((state) => state.progress);
+  const { course_id, current_level } = useSelector((state) => state.progress);
   const { user_id } = useSelector((state) => state.user);
   const { lesson_id } = useSelector((state) => state.lesson);
 
@@ -186,7 +186,7 @@ function HtmlProjectEasy() {
         });
         setPerformanceScore(score);
         setShowModal(true);
-        const nextLevel = 15;
+        const nextLevel = current_level > 20 ? current_level : 20;
         const updateFlag = await updateCourseProgress(
           user_id,
           course_id,

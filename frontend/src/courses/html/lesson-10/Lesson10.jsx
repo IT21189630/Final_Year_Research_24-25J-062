@@ -18,7 +18,7 @@ import PerformanceSummaryModal from "../../../components/performance-summary-mod
 
 function Lesson10() {
   const dispatch = useDispatch();
-  const { course_id } = useSelector((state) => state.progress);
+  const { course_id, current_level } = useSelector((state) => state.progress);
   const { user_id } = useSelector((state) => state.user);
   const { lesson_id } = useSelector((state) => state.lesson);
   const [planetaryDetailsVisibility, setPlanetaryDetailsVisibility] =
@@ -140,7 +140,7 @@ function Lesson10() {
       });
       setPerformanceScore(score);
       setShowModal(true);
-      const nextLevel = 11;
+      const nextLevel = current_level > 11 ? current_level : 11;
       const updateFlag = await updateCourseProgress(
         user_id,
         course_id,

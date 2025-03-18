@@ -14,6 +14,7 @@ import axiosInstanceLessonMangement from "../../../axios/axiosInstanceLessonMang
 
 function CourseDisplayer() {
   const { user_id } = useSelector((state) => state.user);
+  const { current_level } = useSelector((state) => state.progress);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -38,18 +39,12 @@ function CourseDisplayer() {
   };
 
   let flag = 0;
+  console.log(enrolledCourses);
 
-  if (enrolledCourses.length == 0 || enrolledCourses.length < 2) {
-    flag = 1;
-  } else if (
-    enrolledCourses.length > 1 ||
-    enrolledCourses[0].current_level ==
-      enrolledCourses[0].course_id.lessons[
-        enrolledCourses[0].course_id.lessons.length - 1
-      ].level +
-        1
-  ) {
+  if (enrolledCourses.length > 1 || current_level == 21) {
     flag = 2;
+  } else if (enrolledCourses.length == 0 || enrolledCourses.length < 2) {
+    flag = 1;
   }
 
   function SampleNextArrow(props) {
@@ -113,7 +108,6 @@ function CourseDisplayer() {
         <div className="filter-container"></div>
         <div className="course-content-container">
           <span className="page-headline">Available Courses</span>
-          {flag}
           {error || loading ? (
             <ErrorPage />
           ) : (

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useCodeMirror } from "@uiw/react-codemirror";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { html } from "@codemirror/lang-html";
-import GalacticBackground from "../../../images/lessons/planet-exterior.jpg";
+import GalacticBackground from "../../../images/lessons/galactic-map.jpg";
 import TabletScreen from "../../../images/lessons/tab-screen.png";
 import AstronautGuider from "../../../images/lessons/motive-image.png";
 import AstroHeadshot from "../../../images/lessons/astro-headshot.png";
@@ -19,7 +19,7 @@ import PerformanceSummaryModal from "../../../components/performance-summary-mod
 
 function HtmlProjectHard() {
   const dispatch = useDispatch();
-  const { course_id } = useSelector((state) => state.progress);
+  const { course_id, current_level } = useSelector((state) => state.progress);
   const { user_id } = useSelector((state) => state.user);
   const { lesson_id } = useSelector((state) => state.lesson);
 
@@ -176,7 +176,7 @@ function HtmlProjectHard() {
         });
         setPerformanceScore(score);
         setShowModal(true);
-        const nextLevel = 20;
+        const nextLevel = current_level > 20 ? current_level : 20;
         const updateFlag = await updateCourseProgress(
           user_id,
           course_id,
