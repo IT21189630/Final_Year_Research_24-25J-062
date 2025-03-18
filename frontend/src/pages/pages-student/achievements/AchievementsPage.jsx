@@ -76,12 +76,12 @@ function AchievementsPage() {
 		} catch (error) {
 			console.error("Error checking achievements:", error);
 			// toast.error("Failed to check for new achievements");
-			toast("No new achievements", { 
-				icon: '⚠️',
+			toast("No new achievements", {
+				icon: "⚠️",
 				style: {
-					background: '#FFFFFF',
-					color: '#1A2C80'
-				}
+					background: "#FFFFFF",
+					color: "#000000",
+				},
 			});
 			setLoading(false);
 		}

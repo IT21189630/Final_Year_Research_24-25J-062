@@ -187,13 +187,12 @@ const getUserAchievements = async (req, res) => {
 			userExperience = { totalXp: 0 };
 		}
 
-		// Get visible achievements that user hasn't unlocked yet
+		// Get all achievements that user hasn't unlocked yet (including hidden ones)
 		const unlockedAchievementIds = userAchievements.map((ua) =>
 			ua.achievementId._id.toString()
 		);
 		const lockedAchievements = await Achievement.find({
 			_id: { $nin: unlockedAchievementIds },
-			visibility: { $in: ["visible", "partially_hidden"] },
 		});
 
 		return res.status(200).json({

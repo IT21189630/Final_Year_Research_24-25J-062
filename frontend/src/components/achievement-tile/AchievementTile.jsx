@@ -1,6 +1,6 @@
 import React from "react";
 import "./achievement-tile.css";
-import { FaTrophy, FaLock } from "react-icons/fa";
+import { FaTrophy, FaLock, FaQuestion } from "react-icons/fa";
 
 // Achievement rarity colors
 const rarityColors = {
@@ -14,10 +14,15 @@ function AchievementTile({ achievement, unlocked }) {
 	const { name, description, xpReward, icon, rarity, visibility } =
 		achievement;
 
+	const isHidden = visibility === "hidden";
+
 	// Determine tile styling based on rarity and unlock status
 	const getTileStyle = () => {
 		const baseStyle = {
-			borderColor: rarityColors[rarity] || "#3498db",
+			borderColor:
+				isHidden && !unlocked
+					? "#333"
+					: rarityColors[rarity] || "#3498db",
 		};
 
 		if (!unlocked) {
@@ -36,7 +41,7 @@ function AchievementTile({ achievement, unlocked }) {
 	return (
 		<div
 			className={`achievement-tile ${rarity} ${
-				unlocked ? "unlocked" : "locked"
+				unlocked ? "unlocked" : isHidden ? "locked hidden" : "locked"
 			}`}
 			style={getTileStyle()}
 		>
@@ -57,7 +62,7 @@ function AchievementTile({ achievement, unlocked }) {
 						<div className="lock-overlay">
 							<FaLock className="lock-icon" />
 						</div>
-						{visibility !== "hidden" && (
+						{!isHidden && (
 							<img
 								src={`/images/achievements/${icon}`}
 								alt={name}
@@ -70,6 +75,7 @@ function AchievementTile({ achievement, unlocked }) {
 								className="achievement-icon locked-icon"
 							/>
 						)}
+						{isHidden && <FaQuestion className="question-icon" />}
 					</>
 				)}
 				{/* Fallback if image fails to load */}
@@ -78,22 +84,30 @@ function AchievementTile({ achievement, unlocked }) {
 
 			<div className="achievement-details">
 				<h3 className="achievement-name">
-					{unlocked || visibility !== "hidden" ? name : "???"}
+					{unlocked || !isHidden ? name : "Secret Achievement"}
 				</h3>
 				<p className="achievement-description">
-					{unlocked || visibility !== "hidden"
+					{unlocked
 						? description
-						: "This achievement is still a mystery..."}
+						: isHidden
+						? "This mysterious achievement will be revealed when you discover its secret conditions."
+						: description}
 				</p>
 				<div className="achievement-reward">
-					<span className="xp-reward">+{xpReward} XP</span>
+					<span className="xp-reward">
+						+{unlocked || !isHidden ? xpReward : "???"} XP
+					</span>
 					<span className={`rarity-badge ${rarity}`}>{rarity}</span>
 				</div>
 			</div>
 
 			{/* Add a prominent lock icon overlay on the entire tile */}
 			{!unlocked && (
-				<div className="locked-achievement-icon">
+				<div
+					className={`locked-achievement-icon ${
+						isHidden ? "hidden-icon" : ""
+					}`}
+				>
 					<FaLock className="locked-tile-lock-icon" />
 				</div>
 			)}
