@@ -75,7 +75,7 @@ class JavaScriptEvaluator:
                 print(f"Semantic similarity: {semantic_similarity}", file=sys.stderr)
             except Exception as e:
                 print(f"Error in semantic comparison: {e}", file=sys.stderr)
-                semantic_similarity = 0.37  # More precise default if comparison fails
+                semantic_similarity = 0.37
             
             # Method 2: Token-based comparison
             try:
@@ -87,15 +87,14 @@ class JavaScriptEvaluator:
                 user_tokens = re.findall(r'[\w]+|[^\s\w]', normalized_user)
                 solution_tokens = re.findall(r'[\w]+|[^\s\w]', normalized_solution)
                 
-                # Calculate token similarity - produces natural decimal precision
+                # Calculate token similarity
                 matcher = difflib.SequenceMatcher(None, user_tokens, solution_tokens)
                 token_similarity = matcher.ratio()
                 print(f"Token similarity: {token_similarity}", file=sys.stderr)
             except Exception as e:
                 print(f"Error in token comparison: {e}", file=sys.stderr)
-                token_similarity = 0.23  # More precise default if comparison fails
+                token_similarity = 0.23
             
-            # Method 3: Function signature and call comparison
             try:
                 user_functions = re.findall(r'function\s+(\w+)\s*\(([^)]*)\)', js_code)
                 solution_functions = re.findall(r'function\s+(\w+)\s*\(([^)]*)\)', correct_solution)
@@ -105,8 +104,8 @@ class JavaScriptEvaluator:
                 partial_matches = 0
                 for u_func in user_functions:
                     for s_func in solution_functions:
-                        if u_func[0] == s_func[0]:  # Same function name
-                            # Compare parameter count (simple heuristic)
+                        if u_func[0] == s_func[0]: 
+                            # Compare parameter count
                             u_params = [p.strip() for p in u_func[1].split(',') if p.strip()]
                             s_params = [p.strip() for p in s_func[1].split(',') if p.strip()]
                             
@@ -114,7 +113,7 @@ class JavaScriptEvaluator:
                                 function_matches += 1
                                 break
                             else:
-                                # Give partial credit for similar parameter counts
+                              
                                 similarity = min(len(u_params), len(s_params)) / max(1, max(len(u_params), len(s_params)))
                                 partial_matches += similarity
                 
@@ -123,7 +122,7 @@ class JavaScriptEvaluator:
                 print(f"Function similarity: {function_similarity}", file=sys.stderr)
             except Exception as e:
                 print(f"Error in function comparison: {e}", file=sys.stderr)
-                function_similarity = 0.21  # More precise default if comparison fails
+                function_similarity = 0.00
             
             # Method 4: Check for critical lines of code
             try:
@@ -137,9 +136,9 @@ class JavaScriptEvaluator:
                 print(f"Method similarity: {method_similarity}", file=sys.stderr)
             except Exception as e:
                 print(f"Error in method comparison: {e}", file=sys.stderr)
-                method_similarity = 0.19  # More precise default if comparison fails
+                method_similarity = 0.19 
             
-            # Combine scores with weights - use precise arithmetic without rounding
+            # Combine scores with weights
             correctness_score = (0.37 * semantic_similarity + 
                                 0.33 * token_similarity + 
                                 0.15 * function_similarity +
@@ -165,7 +164,7 @@ class JavaScriptEvaluator:
                 correctness_feedback.append("Your function structure differs from the expected solution.")
                 
                 # Provide hints about expected functions
-                if len(solution_functions) <= 3:  # Only show hints for simple solutions
+                if len(solution_functions) <= 3:
                     expected_funcs = [f"{func[0]}({func[1]})" for func in solution_functions]
                     correctness_feedback.append(f"Consider implementing functions like: {', '.join(expected_funcs)}")
             
@@ -173,9 +172,9 @@ class JavaScriptEvaluator:
                 correctness_feedback.append("Your code uses different methods/APIs than the expected solution.")
                 
                 # Extract some key methods from the solution for hints
-                if len(solution_method_calls) <= 5:  # Limit hint size
+                if len(solution_method_calls) <= 5: 
                     key_methods = set([f"{obj}.{method}" for obj, method in solution_method_calls])
-                    sample_methods = list(key_methods)[:3]  # Take up to 3 examples
+                    sample_methods = list(key_methods)[:3] 
                     correctness_feedback.append(f"Consider using methods like: {', '.join(sample_methods)}")
             
             return correctness_score, correctness_feedback
@@ -211,14 +210,14 @@ class JavaScriptEvaluator:
             lines = js_code.strip().split('\n')
             non_empty_lines = [line for line in lines if line.strip() and not line.strip().startswith('//')]
             
-            # Basic complexity: function/loop/conditional density
+            # Basic complexity
             function_count = len(re.findall(r'function\s+\w+\s*\(', js_code))
             loop_count = len(re.findall(r'(for|while)\s*\(', js_code))
             conditional_count = len(re.findall(r'if\s*\(', js_code))
             
-            # Calculate complexity score (higher is more complex)
+            # Calculate complexity score
             complexity_score = (function_count + loop_count + conditional_count) / max(1, len(non_empty_lines))
-            metrics["complexity"] = 1.0 - min(complexity_score * 1.87, 0.9)  # Lower complexity is better, use 1.87 for finer gradation
+            metrics["complexity"] = 1.0 - min(complexity_score * 1.87, 0.9) 
             
             # Check for comments
             comment_lines = len([line for line in lines if line.strip().startswith('//')])
@@ -228,7 +227,7 @@ class JavaScriptEvaluator:
             indentation_patterns = [len(line) - len(line.lstrip()) for line in lines if line.strip()]
             indentation_consistency = np.std(indentation_patterns) if indentation_patterns else 0
             
-            # Readability score - using more precise formula
+            # Readability score
             metrics["readability"] = min(0.97, 0.53 + (comment_ratio * 1.2) - (indentation_consistency / 22.5))
             
             # Check for maintainability indicators
@@ -236,7 +235,7 @@ class JavaScriptEvaluator:
             modular_functions = function_count > 0
             variable_naming = len(re.findall(r'const|let|var\s+[a-zA-Z_]\w*\s*=', js_code))
             
-            # Maintainability score - calculate with finer precision
+            # Maintainability score
             metrics["maintainability"] = min(0.95, 0.32 + 
                                           (0.23 if error_handling else 0) + 
                                           (0.18 if modular_functions else 0) + 
@@ -297,7 +296,7 @@ class JavaScriptEvaluator:
         results["syntax_valid"] = syntax_valid
         
         if not syntax_valid:
-            results["score"] = 0.21  # Very low score for syntax errors, but with decimal
+            results["score"] = 0.00
             results["feedback"] = f"Syntax Error: {syntax_error}"
             return results
         
@@ -309,7 +308,6 @@ class JavaScriptEvaluator:
         issues = self.check_best_practices(js_code)
         results["issues"] = issues
         
-        # 4. Check code correctness against solution if provided
         correctness_score = 0.0
         correctness_feedback = []
         
@@ -320,23 +318,18 @@ class JavaScriptEvaluator:
             print(f"Correctness evaluation complete: score={correctness_score}", file=sys.stderr)
         else:
             print(f"No reference solution provided for correctness evaluation", file=sys.stderr)
-            correctness_score = 0.33  # Default score when no solution is provided, with decimal
+            correctness_score = 0.33 
             correctness_feedback = ["No reference solution available for comparison."]
-        
-        # Always assign the correctness score and feedback
+
         results["correctness_score"] = correctness_score
         results["correctness_feedback"] = correctness_feedback
-        
-        # 5. Calculate overall score
-        # Base code quality score - keep full precision without rounding
+
+        # Base code quality score 
         code_quality_score = (metrics["readability"] + metrics["maintainability"] + metrics["complexity"]) / 3
         
-        # Deduct for issues - use more precise calculation with diminishing returns
-        issue_penalty = min(0.47, len(issues) * 0.07)  # Changed from 0.1 to 0.07 for finer granularity
+        issue_penalty = min(0.47, len(issues) * 0.07)
         
-        # Combine scores with weights - preserve all decimal places
         if correct_solution and correct_solution.strip() and not correct_solution.strip().startswith("//"):
-            # If we have a solution, prioritize correctness
             final_score = (0.77 * correctness_score + 
                           0.23 * max(0, code_quality_score - issue_penalty))
             print(f"Calculated final score with correctness: {final_score}", file=sys.stderr)
@@ -345,14 +338,10 @@ class JavaScriptEvaluator:
             final_score = max(0, code_quality_score - issue_penalty)
             print(f"Calculated final score with only quality: {final_score}", file=sys.stderr)
         
-        # Allow full precision of score without artificial constraints
-        # Changed from max(0.1, min(1.0, final_score)) to preserve decimals
-        results["score"] = max(0.05, min(0.99, final_score))  # Only limit to 0.05 minimum and 0.99 maximum
-        
-        # 6. Generate combined feedback
+        results["score"] = max(0.05, min(0.99, final_score))
+
         feedback = []
         
-        # Code quality feedback
         if final_score > 0.8:
             feedback.append("Excellent code quality")
         elif final_score > 0.6:
@@ -362,7 +351,6 @@ class JavaScriptEvaluator:
         else:
             feedback.append("Code quality needs significant improvement")
         
-        # Add correctness feedback if available
         if correctness_feedback:
             feedback.extend(correctness_feedback)
         
@@ -394,14 +382,12 @@ def evaluate_code(js_code, challenge_title="", challenge_description="", correct
         print(f"Calling evaluate_javascript method", file=sys.stderr)
         results = evaluator.evaluate_javascript(js_code, challenge_title, challenge_description, correct_solution)
         
-        # Convert scores to percentage for consistency but preserve decimal places
         results["score"] = float(results["score"] * 100)
-        
-        # Always provide a correctness score, defaulting to 18.5% if none calculated
+
         if "correctness_score" in results and results["correctness_score"] > 0:
             results["correctness_score"] = float(results["correctness_score"] * 100)
         else:
-            results["correctness_score"] = 18.7  # Default minimum with decimal
+            results["correctness_score"] = float(results["correctness_score"] * 100)
         
         print(f"Python evaluator results: score={results['score']}, correctness={results['correctness_score']}", 
               file=sys.stderr)
@@ -411,14 +397,13 @@ def evaluate_code(js_code, challenge_title="", challenge_description="", correct
         print(f"Error evaluating code: {e}", file=sys.stderr)
         return {
             "error": str(e),
-            "score": 19.5,  # Minimum score with decimal
-            "correctness_score": 18.7,  # Minimum score with decimal
+            "score": 0, 
+            "correctness_score": 0, 
             "feedback": f"Error occurred during evaluation: {str(e)}"
         }
 
 if __name__ == "__main__":
     try:
-        # Check if command line arguments are provided
         if len(sys.argv) < 2:
             raise ValueError("Please provide the input JSON as a command line argument")
         
