@@ -1,0 +1,155 @@
+.achievement-tile {
+	display: flex;
+	background-color: #1e293b;
+	border-radius: 10px;
+	padding: 15px;
+	margin: 10px 0;
+	transition: all 0.3s ease;
+	border: 2px solid;
+	min-height: 130px;
+	position: relative;
+	overflow: hidden;
+}
+
+.achievement-tile:hover {
+	transform: translateY(-5px);
+}
+
+.achievement-tile.unlocked {
+	background: linear-gradient(145deg, #1e293b, #334155);
+}
+
+.achievement-tile.locked {
+	cursor: default;
+}
+
+.achievement-icon-container {
+	width: 80px;
+	height: 80px;
+	border-radius: 50%;
+	background-color: #0f172a;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-right: 15px;
+	position: relative;
+	flex-shrink: 0;
+}
+
+.achievement-icon {
+	width: 70%;
+	height: 70%;
+	object-fit: contain;
+}
+
+.trophy-icon {
+	display: none;
+	font-size: 2rem;
+	color: #f59e0b;
+}
+
+.fallback-icon .trophy-icon {
+	display: block;
+}
+
+.achievement-details {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.achievement-name {
+	margin: 0 0 8px 0;
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: #f1f5f9;
+}
+
+.achievement-description {
+	margin: 0 0 10px 0;
+	font-size: 0.9rem;
+	color: #cbd5e1;
+	flex: 1;
+}
+
+.achievement-reward {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.xp-reward {
+	font-weight: 600;
+	color: #22c55e;
+	font-size: 0.9rem;
+}
+
+.rarity-badge {
+	padding: 3px 8px;
+	border-radius: 20px;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	font-weight: 600;
+}
+
+.rarity-badge.common {
+	background-color: #3498db;
+	color: #f1f5f9;
+}
+
+.rarity-badge.rare {
+	background-color: #9b59b6;
+	color: #f1f5f9;
+}
+
+.rarity-badge.epic {
+	background-color: #f39c12;
+	color: #f1f5f9;
+}
+
+.rarity-badge.legendary {
+	background-color: #e74c3c;
+	color: #f1f5f9;
+}
+
+.lock-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.7);
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 2;
+}
+
+.lock-icon {
+	color: #94a3b8;
+	font-size: 1.5rem;
+}
+
+.locked-icon {
+	opacity: 0.5;
+	filter: blur(2px);
+}
+
+/* Responsive styles */
+@media (max-width: 576px) {
+	.achievement-tile {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+	}
+
+	.achievement-icon-container {
+		margin-right: 0;
+		margin-bottom: 15px;
+	}
+
+	.achievement-details {
+		width: 100%;
+	}
+}

@@ -38,6 +38,7 @@ import LevelDisplayer from "./pages/pages-student/level-displayer/LevelDisplayer
 import SupportLessonsDisplayer from "./pages/pages-student/support-lessons/SupportLessonsDisplayer";
 import MainScreenStudent from "./pages/pages-student/main-screen/MainScreenStudent";
 import Leaderboard from "./pages/pages-student/leaderboard/Leaderboard";
+import AchievementsPage from "./pages/pages-student/achievements/AchievementsPage";
 // m2 page imports
 
 // m3 page imports
@@ -106,11 +107,17 @@ function App() {
 							element={<Leaderboard />}
 						/>
 						<Route
+							path="/student/dashboard/achievements"
+							element={<AchievementsPage />}
+						/>
+						<Route
 							path="/student/dashboard/overview"
 							element={<MainScreenStudent />}
 						/>
 					</Route>
 				</Route>
+
+				{/* Student standalone routes */}
 
 				<Route path="/lesson1" element={<Lesson1 />} />
 				<Route path="/lesson2" element={<Lesson2 />} />

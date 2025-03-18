@@ -14,12 +14,15 @@ const Leaderboard = require("./models/leaderboard.model");
 
 connectDB();
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4004;
 
+// Update CORS to accept all origins during development
 app.use(
 	cors({
-		origin: "http://localhost:3000",
+		origin: ["http://localhost:3000", "http://127.0.0.1:3000"],
 		credentials: true,
+		methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+		allowedHeaders: ["Content-Type", "Authorization"],
 	})
 );
 
@@ -27,11 +30,17 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/gamified-learning/api/gamification", leaderboardRoutes);
+// Add achievement routes before JWT verification
 app.use("/gamified-learning/api/gamification", achievementRoutes);
+
+// Protected routes that need JWT verification
+// app.use("/gamified-learning/api/gamification/protected", verifyJWT);
+
+// Routes that don't need JWT verification
+app.use("/gamified-learning/api/gamification", leaderboardRoutes);
 app.use("/gamified-learning/api/gamification", virtualCurrencyRoutes);
 
-app.use(verifyJWT);
+// Apply error handling middleware
 app.use(errorHandler);
 
 let serverPromise = new Promise((resolve, reject) => {
@@ -39,7 +48,7 @@ let serverPromise = new Promise((resolve, reject) => {
 		console.log(`🚀 data connection with users collection established! 🚀`);
 		const server = app.listen(PORT, () => {
 			console.log(
-				`🤖 AI integration service is up and running on port: ${PORT} 🤖`
+				`🚀 Gamification mechanisms service is up and running on port: ${PORT} 🚀`
 			);
 
 			// Set up scheduled leaderboard sync (every 6 hours)
