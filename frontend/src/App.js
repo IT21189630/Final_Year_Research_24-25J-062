@@ -39,6 +39,7 @@ import SupportLessonsDisplayer from "./pages/pages-student/support-lessons/Suppo
 import MainScreenStudent from "./pages/pages-student/main-screen/MainScreenStudent";
 import Leaderboard from "./pages/pages-student/leaderboard/Leaderboard";
 import AchievementsPage from "./pages/pages-student/achievements/AchievementsPage";
+import CoinsPage from "./pages/pages-student/coins/CoinsPage";
 // m2 page imports
 
 // m3 page imports
@@ -109,6 +110,10 @@ function App() {
 						<Route
 							path="/student/dashboard/achievements"
 							element={<AchievementsPage />}
+						/>
+						<Route
+							path="/student/dashboard/coins"
+							element={<CoinsPage />}
 						/>
 						<Route
 							path="/student/dashboard/overview"

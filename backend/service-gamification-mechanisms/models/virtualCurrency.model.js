@@ -1,31 +1,39 @@
 const mongoose = require("mongoose");
 
-const virtualCurrencySchema = new mongoose.Schema(
-  {
-    userId: { 
-        type: String, 
-        required: true 
-    },
-    balance: { 
-        type: Number, 
-        default: 0 
-    },
-    transactions: [
-      {
-        amount: Number,
-        description: String,
-        timestamp: { 
-            type: Date, 
-            default: Date.now 
-        },
-      },
-    ],
-  },
-  {
-    timestamps: true,
-  }
+const userWalletSchema = new mongoose.Schema(
+	{
+		userId: {
+			type: String,
+			required: true,
+			unique: true,
+		},
+		coinBalance: {
+			type: Number,
+			default: 0,
+		},
+		transactions: [
+			{
+				type: {
+					type: String,
+					enum: ["CONVERT_XP", "PURCHASE", "REWARD"],
+					required: true,
+				},
+				xpAmount: Number,
+				coinAmount: Number,
+				conversionRate: String,
+				description: String,
+				timestamp: {
+					type: Date,
+					default: Date.now,
+				},
+			},
+		],
+	},
+	{
+		timestamps: true,
+	}
 );
 
-const VirtualCurrency = mongoose.model("VirtualCurrency", virtualCurrencySchema);
+const UserWallet = mongoose.model("UserWallet", userWalletSchema);
 
-module.exports = VirtualCurrency;
+module.exports = UserWallet;

@@ -8,7 +8,7 @@ const connectDB = require("./config/connectDb");
 const verifyJWT = require("./middlewares/verifyJWTMiddleware");
 const leaderboardRoutes = require("./routes/leaderboard.routes");
 const achievementRoutes = require("./routes/achievement.routes");
-const virtualCurrencyRoutes = require("./routes/virtualCurrency.routes");
+const walletRoutes = require("./routes/virtualCurrency.routes");
 const axios = require("axios");
 const Leaderboard = require("./models/leaderboard.model");
 
@@ -38,7 +38,7 @@ app.use("/gamified-learning/api/gamification", achievementRoutes);
 
 // Routes that don't need JWT verification
 app.use("/gamified-learning/api/gamification", leaderboardRoutes);
-app.use("/gamified-learning/api/gamification", virtualCurrencyRoutes);
+app.use("/gamified-learning/api/gamification", walletRoutes);
 
 // Apply error handling middleware
 app.use(errorHandler);

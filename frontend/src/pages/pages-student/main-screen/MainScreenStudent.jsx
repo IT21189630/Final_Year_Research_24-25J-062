@@ -55,7 +55,12 @@ function MainScreenStudent() {
 								<FaMedal className="tile-icon" />
 								<span className="tile-name">Leaderboard</span>
 							</div>
-							<div className="btn-tile coins">
+							<div
+								className="btn-tile coins"
+								onClick={() =>
+									handleNavigate("/student/dashboard/coins")
+								}
+							>
 								<FaCoins className="tile-icon" />
 								<span className="tile-name">Coins</span>
 							</div>
