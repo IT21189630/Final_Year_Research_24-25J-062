@@ -24,7 +24,6 @@ function AchievementTile({ achievement, unlocked }) {
 			return {
 				...baseStyle,
 				opacity: visibility === "partially_hidden" ? 0.7 : 1,
-				filter: "grayscale(100%)",
 			};
 		}
 
@@ -91,6 +90,13 @@ function AchievementTile({ achievement, unlocked }) {
 					<span className={`rarity-badge ${rarity}`}>{rarity}</span>
 				</div>
 			</div>
+
+			{/* Add a prominent lock icon overlay on the entire tile */}
+			{!unlocked && (
+				<div className="locked-achievement-icon">
+					<FaLock className="locked-tile-lock-icon" />
+				</div>
+			)}
 		</div>
 	);
 }

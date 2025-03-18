@@ -75,7 +75,14 @@ function AchievementsPage() {
 			}
 		} catch (error) {
 			console.error("Error checking achievements:", error);
-			toast.error("Failed to check for new achievements");
+			// toast.error("Failed to check for new achievements");
+			toast("No new achievements", { 
+				icon: '⚠️',
+				style: {
+					background: '#FFFFFF',
+					color: '#1A2C80'
+				}
+			});
 			setLoading(false);
 		}
 	};
@@ -128,6 +135,51 @@ function AchievementsPage() {
 		return grouped;
 	};
 
+	// Combine locked and unlocked achievements for display
+	const combineAchievements = () => {
+		// Create a map of all achievements by their ID
+		const achievementsMap = new Map();
+
+		// Add all locked achievements to the map
+		filteredLocked.forEach((achievement) => {
+			achievementsMap.set(achievement._id, {
+				achievement,
+				unlocked: false,
+			});
+		});
+
+		// Update or add unlocked achievements to the map
+		filteredUnlocked.forEach((achievement) => {
+			const id = achievement.achievementId?._id || achievement._id;
+			achievementsMap.set(id, {
+				achievement: achievement.achievementId || achievement,
+				unlocked: true,
+			});
+		});
+
+		// Convert the map back to an array
+		return Array.from(achievementsMap.values());
+	};
+
+	// Group combined achievements by rarity
+	const groupAchievementsByRarity = (achievements) => {
+		const rarityOrder = ["legendary", "epic", "rare", "common"];
+		const grouped = {};
+
+		rarityOrder.forEach((rarity) => {
+			const rarityAchievements = achievements.filter((item) => {
+				const achievement = item.achievement;
+				return achievement.rarity === rarity;
+			});
+
+			if (rarityAchievements.length > 0) {
+				grouped[rarity] = rarityAchievements;
+			}
+		});
+
+		return grouped;
+	};
+
 	useEffect(() => {
 		if (user_id) {
 			initializeAchievements().then(() => {
@@ -143,6 +195,15 @@ function AchievementsPage() {
 	const filteredLocked = getFilteredAchievements(achievements.locked);
 	const groupedUnlocked = groupByRarity(filteredUnlocked);
 	const groupedLocked = groupByRarity(filteredLocked);
+
+	// Get combined achievements
+	const combinedAchievements = combineAchievements();
+	const groupedAchievements = groupAchievementsByRarity(combinedAchievements);
+
+	// Calculate counts
+	const unlockedCount = filteredUnlocked.length;
+	const lockedCount = filteredLocked.length;
+	const totalCount = unlockedCount + lockedCount;
 
 	return (
 		<div className="achievements-page-container">
@@ -200,79 +261,77 @@ function AchievementsPage() {
 			</div>
 
 			<div className="achievements-content">
-				{filteredUnlocked.length > 0 && (
-					<div className="achievements-section">
-						<h2 className="section-title">
-							Unlocked Achievements ({filteredUnlocked.length})
-						</h2>
-
-						{Object.entries(groupedUnlocked).map(
-							([rarity, achievements]) => (
-								<div key={rarity} className="rarity-group">
-									<h3 className={`rarity-title ${rarity}`}>
-										{rarity.charAt(0).toUpperCase() +
-											rarity.slice(1)}{" "}
-										Achievements
-									</h3>
-									<div className="achievements-grid">
-										{achievements.map((achievement) => (
-											<AchievementTile
-												key={
-													achievement.achievementId
-														?._id || achievement._id
-												}
-												achievement={
-													achievement.achievementId ||
-													achievement
-												}
-												unlocked={true}
-											/>
-										))}
-									</div>
+				{totalCount > 0 ? (
+					<>
+						<div className="achievements-summary">
+							<div className="achievements-progress">
+								<div className="progress-label">
+									<span>
+										Progress: {unlockedCount}/{totalCount}{" "}
+										Achievements Unlocked
+									</span>
+									<span className="progress-percentage">
+										{totalCount > 0
+											? Math.round(
+													(unlockedCount /
+														totalCount) *
+														100
+											  )
+											: 0}
+										%
+									</span>
 								</div>
-							)
-						)}
-					</div>
-				)}
-
-				{filteredLocked.length > 0 && (
-					<div className="achievements-section">
-						<h2 className="section-title">
-							Locked Achievements ({filteredLocked.length})
-						</h2>
-
-						{Object.entries(groupedLocked).map(
-							([rarity, achievements]) => (
-								<div key={rarity} className="rarity-group">
-									<h3 className={`rarity-title ${rarity}`}>
-										{rarity.charAt(0).toUpperCase() +
-											rarity.slice(1)}{" "}
-										Achievements
-									</h3>
-									<div className="achievements-grid">
-										{achievements.map((achievement) => (
-											<AchievementTile
-												key={achievement._id}
-												achievement={achievement}
-												unlocked={false}
-											/>
-										))}
-									</div>
+								<div className="progress-bar-container">
+									<div
+										className="progress-bar"
+										style={{
+											width: `${
+												totalCount > 0
+													? (unlockedCount /
+															totalCount) *
+													  100
+													: 0
+											}%`,
+										}}
+									></div>
 								</div>
-							)
-						)}
-					</div>
-				)}
-
-				{filteredUnlocked.length === 0 &&
-					filteredLocked.length === 0 && (
-						<div className="no-achievements">
-							<p>
-								No achievements match your current filters. Try
-								adjusting your filters.
-							</p>
+							</div>
 						</div>
-					)}
+
+						{Object.entries(groupedAchievements).map(
+							([rarity, achievements]) => (
+								<div
+									key={rarity}
+									className="achievements-section"
+								>
+									<h2
+										className={`section-title rarity-${rarity}`}
+									>
+										{rarity.charAt(0).toUpperCase() +
+											rarity.slice(1)}{" "}
+										Achievements
+									</h2>
+									<div className="achievements-grid">
+										{achievements.map((item) => (
+											<AchievementTile
+												key={item.achievement._id}
+												achievement={item.achievement}
+												unlocked={item.unlocked}
+											/>
+										))}
+									</div>
+								</div>
+							)
+						)}
+					</>
+				) : (
+					<div className="no-achievements">
+						<p>
+							No achievements match your current filters. Try
+							adjusting your filters.
+						</p>
+					</div>
+				)}
 			</div>
 		</div>
 	);
