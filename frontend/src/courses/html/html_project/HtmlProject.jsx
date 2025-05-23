@@ -58,15 +58,6 @@ function HtmlProject() {
   const [attemptCounter, setAttemptCounter] = useState(5);
   const [performanceScore, setPerformanceScore] = useState(0);
   const [hint, setHint] = useState("");
-  const [primaryAlertsVisibility, setPrimaryAlertsVisibility] = useState(false);
-  const [systemWarningsVisibility, setSystemWarningsVisibility] =
-    useState(false);
-  const [missionUpdatesVisibility, setMissionUpdatesVisibility] =
-    useState(false);
-  const [crewStatusVisibility, setCrewStatusVisibility] = useState(false);
-  const [equipmentCheckVisibility, setEquipmentCheckVisibility] =
-    useState(false);
-  const [dailyLogsVisibility, setDailyLogsVisibility] = useState(false);
   const [startAttempt, setStartAttempt] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showTargetOutput, setShowTargetOutput] = useState(false);
@@ -79,12 +70,15 @@ function HtmlProject() {
   const [showSkill1, setShowSkill1] = useState(false);
   const [showSkill2, setShowSkill2] = useState(false);
   const [showSkill3, setShowSkill3] = useState(false);
+  const [globalErrorState, setGlobalErrorState] = useState(false);
+  const [currentHint, setCurrentHint] = useState("");
+
   const editorRef = useRef();
 
   const useHintSystem = () => {
     if (hintCounter > 0) {
       setHintCounter((prev) => prev - 1);
-      setHint(hints.reverse()[hintCounter - 1]);
+      setHint(currentHint);
       setTimeout(() => {
         setHint("");
       }, hintDuration);
@@ -110,7 +104,7 @@ function HtmlProject() {
         htmlContent
       );
 
-    const hasHeadline = /<h1[^>]*>\s*Bio\s*Data\s*Form\s*<\/h1>/i.test(
+    const hasHeadline = /<h1[^>]*>[^<]*bio\s*data\s*form[^<]*<\/h1>/i.test(
       htmlContent
     );
 
@@ -212,51 +206,176 @@ function HtmlProject() {
     }
   };
 
-  const validateHTML = () => {
-    let htmlContent = htmlInput.trim();
+  const validateHTML = (html) => {
+    const trimmed = html.trim().toLowerCase();
 
-    const hasHeadline = /<h1[^>]*>\s*Bio\s*Data\s*Form\s*<\/h1>/i.test(
-      htmlContent
-    );
+    // === Check critical root <html> wrapper ===
+    if (!/^<html[^>]*>[\s\S]*<\/html>$/.test(trimmed)) {
+      setGlobalErrorState(true);
+      if (!/<html[^>]*>/.test(trimmed)) {
+        setCurrentHint("Missing opening <html> tag.");
+      } else if (!/<\/html>/.test(trimmed)) {
+        setCurrentHint("Missing closing </html> tag.");
+      } else {
+        setCurrentHint(
+          "Root <html> tags are malformed or do not wrap all content."
+        );
+      }
+      resetDisplayStates(); // Hide all
+      return false;
+    }
 
-    const hasHeadshot =
-      /<img\s+[^>]*src=["']\.\/my_photos\/headshot\.png["'][^>]*\/?>/i.test(
-        htmlContent
-      );
+    const insideHtml =
+      trimmed.match(/^<html[^>]*>([\s\S]*)<\/html>$/i)?.[1] || "";
 
-    const hasParagraph =
-      /<p[^>]*>\s*<b>\s*About\s*Jack\s*Smith:\s*<\/b>[\s\S]*?<\/p>/i.test(
-        htmlContent
-      );
+    const headOpen = insideHtml.indexOf("<head");
+    const headClose = insideHtml.indexOf("</head>");
+    const bodyOpen = insideHtml.indexOf("<body");
+    const bodyClose = insideHtml.indexOf("</body>");
 
-    const hasExperience1 =
-      /<li[^>]*>\s*Assistant\s*Pilot\s*-\s*4\s*years\s*<\/li>/i.test(
-        htmlContent
+    if (headOpen === -1 && bodyOpen === -1) {
+      setGlobalErrorState(true);
+      setCurrentHint("Missing both <head> and <body> sections inside <html>.");
+      resetDisplayStates(); // Hide all
+      return false;
+    } else if (headOpen === -1) {
+      setGlobalErrorState(true);
+      setCurrentHint("Missing <head> section inside <html>.");
+      resetDisplayStates(); // Hide all
+      return false;
+    } else if (bodyOpen === -1) {
+      setGlobalErrorState(true);
+      setCurrentHint("Missing <body> section inside <html>.");
+      resetDisplayStates(); // Hide all
+      return false;
+    }
+
+    if (headClose > bodyOpen || headClose === -1 || bodyClose === -1) {
+      setGlobalErrorState(true);
+      setCurrentHint(
+        "Malformed structure: <body> must come after closing </head>."
       );
-    const hasExperience2 =
-      /<li[^>]*>\s*Trainee\s*Astronaut\s*-\s*4\s*years\s*<\/li>/i.test(
-        htmlContent
+      resetDisplayStates(); // Hide all
+      return false;
+    }
+
+    // === Parse the document ===
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html.trim(), "text/html");
+
+      setGlobalErrorState(false);
+      setCurrentHint("");
+
+      // === Validate individual elements ===
+
+      // Headline <h1>
+      const bodyHTML = doc.body.innerHTML.trim();
+      const expectedH1 = "<h1>Bio Data Form</h1>";
+
+      // Check for the exact <h1> tag inside body
+      if (bodyHTML.includes(expectedH1)) {
+        setShowHeadline(true);
+      } else {
+        setShowHeadline(false);
+        if (!doc.querySelector("h1")) {
+          setCurrentHint(
+            (h) => h + " Missing heading: <h1>Bio Data Form</h1>. "
+          );
+        } else {
+          setCurrentHint((h) => h + " Incorrect or malformed heading tag. ");
+        }
+      }
+
+      // Image
+      const image = doc.querySelector("img[src='./my_photos/headshot.png']");
+      if (image) {
+        setShowHeadshot(true);
+      } else {
+        setShowHeadshot(false);
+        setCurrentHint((h) => h + " Missing or incorrect image tag. ");
+      }
+
+      // Paragraph with <b>About Jack Smith:</b>
+      const paragraph = doc.querySelector("p b");
+      if (paragraph && paragraph.closest("p")) {
+        setShowParagraph(true);
+      } else {
+        setShowParagraph(false);
+        setCurrentHint(
+          (h) =>
+            h +
+            " Missing or malformed paragraph with <b>About Jack Smith:</b>. "
+        );
+      }
+
+      // Experience list
+      const expItems = [...doc.querySelectorAll("li")].map((li) =>
+        li.textContent.trim()
       );
-    const hasExperience3 =
-      /<li[^>]*>\s*Senior\s*Astronaut\s*-\s*1\s*year\s*<\/li>/i.test(
-        htmlContent
+      const expectedExperiences = [
+        "Assistant Pilot - 4 years",
+        "Trainee Astronaut - 4 years",
+        "Senior Astronaut - 1 year",
+      ];
+      const experiencesMatched = expectedExperiences.every((exp) =>
+        expItems.includes(exp)
       );
-    const hasSkill1 = /<li[^>]*>\s*Adaptability\s*<\/li>/i.test(htmlContent);
-    const hasSkill2 = /<li[^>]*>\s*Effective\s*Communication\s*<\/li>/i.test(
-      htmlContent
-    );
-    const hasSkill3 = /<li[^>]*>\s*Good\s*with\s*Teamwork\s*<\/li>/i.test(
-      htmlContent
-    );
-    setShowHeadline(hasHeadline);
-    setShowHeadshot(hasHeadshot);
-    setShowParagraph(hasParagraph);
-    setShowExperience1(hasExperience1);
-    setShowExperience2(hasExperience2);
-    setShowExperience3(hasExperience3);
-    setShowSkill1(hasSkill1);
-    setShowSkill2(hasSkill2);
-    setShowSkill3(hasSkill3);
+      if (experiencesMatched) {
+        setShowExperience1(true);
+        setShowExperience2(true);
+        setShowExperience3(true);
+      } else {
+        setShowExperience1(false);
+        setShowExperience2(false);
+        setShowExperience3(false);
+        setCurrentHint(
+          (h) => h + " One or more experience items missing or incorrect. "
+        );
+      }
+
+      // Skills list
+      const expectedSkills = [
+        "Adaptability",
+        "Effective Communication",
+        "Good with Teamwork",
+      ];
+      const skillsMatched = expectedSkills.every((skill) =>
+        expItems.includes(skill)
+      ); // Same li’s? Should ideally separate experience/skills list in real HTML
+      if (skillsMatched) {
+        setShowSkill1(true);
+        setShowSkill2(true);
+        setShowSkill3(true);
+      } else {
+        setShowSkill1(false);
+        setShowSkill2(false);
+        setShowSkill3(false);
+        setCurrentHint(
+          (h) => h + " One or more skill items missing or incorrect. "
+        );
+      }
+
+      // Finally, allow display of any elements that passed
+      return true;
+    } catch (e) {
+      setGlobalErrorState(true);
+      setCurrentHint("There is a syntax error in your HTML structure.");
+      resetDisplayStates(); // Hide all
+      return false;
+    }
+  };
+
+  const resetDisplayStates = () => {
+    setShowHeadline(false);
+    setShowHeadshot(false);
+    setShowParagraph(false);
+    setShowExperience1(false);
+    setShowExperience2(false);
+    setShowExperience3(false);
+    setShowSkill1(false);
+    setShowSkill2(false);
+    setShowSkill3(false);
   };
 
   const { setContainer } = useCodeMirror({
@@ -277,7 +396,7 @@ function HtmlProject() {
   });
 
   useEffect(() => {
-    validateHTML();
+    validateHTML(htmlInput);
   }, [htmlInput]);
 
   useEffect(() => {
@@ -465,8 +584,12 @@ function HtmlProject() {
                 src={AstronautGuider}
                 alt="astronaut-image"
               />
-              <p className="motive-text">{hint}</p>
+              {/* Display either the regular hint or a global error hint */}
+              <p className="motive-text">
+                {globalErrorState ? currentHint : hint}
+              </p>
             </div>
+
             {/* tablet screen */}
             <div
               className="tablet-screen"
@@ -501,6 +624,7 @@ function HtmlProject() {
                     </p>
                   )}
                 </div>
+
                 <div className="lower-row">
                   {/* strengths */}
                   <div className="partition">
@@ -517,6 +641,7 @@ function HtmlProject() {
                       {showExperience3 && <li>Senior Astronaut - 1 year</li>}
                     </ol>
                   </div>
+
                   {/* skills */}
                   <div className="partition">
                     {(showSkill1 || showSkill2 || showSkill3) && (
