@@ -38,23 +38,11 @@ const studentSidebarData = [
 		icon: <AiFillCode />,
 		link: "/js/lesson1",
 	},
-
 	{
 		text: "Code Labratory",
 		icon: <SiScilab />,
 		link: "/student/dashboard/virtuallab",
 	},
-	{
-		text: "Dev Collab Platform",
-		icon: <TbSocial />,
-    link: "/today-challenge",
-  },
-
-  {
-    text: "Create Challenge",
-    icon: <TbSocial />,
-		link: "/student/dashboard/create-challenge"
-	}
 ];
 
 export default studentSidebarData;

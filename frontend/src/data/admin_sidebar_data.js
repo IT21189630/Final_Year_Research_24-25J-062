@@ -25,6 +25,11 @@ const adminSidebarData = [
     icon: <FaRobot />,
     link: "/admin/dashboard/create_recommendation",
   },
+  {
+    text: "Create Daily Challenge",
+    icon: <FaRobot />,
+    link: "/admin/dashboard/create-challenge",
+  },
 ];
 
 export default adminSidebarData;

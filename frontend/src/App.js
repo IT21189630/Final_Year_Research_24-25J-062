@@ -1,7 +1,6 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
 
-
 // pages
 import Home from "./pages/home/Home";
 import SignIn from "./pages/signin/SignIn";
@@ -46,18 +45,21 @@ import CreateLesson from "./pages/pages-admin/create-lesson/CreateLesson";
 import CreateCourse from "./pages/pages-admin/create-course/CreateCourse";
 import UpdateCourse from "./pages/pages-admin/update-course/UpdateCourse";
 import CreateRecommendation from "./pages/pages-admin/create-recommendation-lesson/CreateRecommendation";
+
+// m2 page imports
 import Leaderboard from "./pages/pages-student/leaderboard/Leaderboard";
 import AchievementsPage from "./pages/pages-student/achievements/AchievementsPage";
 import CoinsPage from "./pages/pages-student/coins/CoinsPage";
-// m2 page imports
+import JavaScriptLesson1 from "./courses/javascript/lesson-1/JSLesson1";
 
 // m3 page imports
+import VirtualLab from "./pages/virtual-coding-lab/VirtualLab";
 
 // m4 page imports
+import CreateDailyChallenge from './components/social-collab-platform/CreateDailyChallenge';
+import TodayChallenge from './components/social-collab-platform/TodayChallenge';
+import AttemptChallenge from './components/social-collab-platform/AttemptChallenge';
 
-// js lesson page imports
-import JavaScriptLesson1 from "./courses/javascript/lesson-1/JSLesson1";
-import VirtualLab from "./pages/virtual-coding-lab/VirtualLab";
 
 function App() {
 	return (
@@ -88,6 +90,11 @@ function App() {
               path="/admin/dashboard/create_recommendation"
               element={<CreateRecommendation />}
             />
+			<Route 
+				path="/admin/dashboard/create-challenge" 
+				element={<CreateDailyChallenge />} 
+			/>
+			
           </Route>
         </Route>
 
@@ -136,7 +143,22 @@ function App() {
 							path="/student/dashboard/overview"
 							element={<MainScreenStudent />}
 						/>
-            <Route path="/student/dashboard/virtuallab" element={<VirtualLab />} />
+            			<Route 
+							path="/student/dashboard/virtuallab" 
+							element={<VirtualLab />} 
+						/>
+						<Route 
+							path="/student/dashboard/today-challenge" 
+							element={<TodayChallenge />} 
+						/>
+						<Route 
+							path="/student/dashboard/attempt/:id" 
+							element={<AttemptChallenge />} 
+						/>
+						<Route 
+							path="/student/dashboard/attempt" 
+							element={<AttemptChallenge />} 
+						/>
 					</Route>
 				</Route>
 
@@ -153,10 +175,10 @@ function App() {
 				<Route path="/lesson9" element={<Lesson9 />} />
 				<Route path="/lesson10" element={<Lesson10 />} />
 				<Route path="/lesson20" element={<HtmlProject />} />
-        <Route path="/html-proj/challenge" element={<HtmlProjectHard />} />
-        <Route path="/html-proj/easy" element={<HtmlProjectEasy />} />
+        		<Route path="/html-proj/challenge" element={<HtmlProjectHard />} />
+        		<Route path="/html-proj/easy" element={<HtmlProjectEasy />} />
 				<Route path="/lesson21" element={<Lesson21 />} />
-        <Route path="/lesson21A" element={<Lesson21A />} />
+        		<Route path="/lesson21A" element={<Lesson21A />} />
 				<Route path="/lesson22" element={<Lesson22 />} />
 				<Route path="/lesson23" element={<Lesson23 />} />
 				<Route path="/lesson24" element={<Lesson24 />} />
