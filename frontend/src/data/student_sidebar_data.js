@@ -5,44 +5,50 @@ import { SiScilab } from "react-icons/si";
 import { TbSocial } from "react-icons/tb";
 import { FaGraduationCap } from "react-icons/fa6";
 import { SiProgress } from "react-icons/si";
+import { FaTrophy } from "react-icons/fa";
 
 const studentSidebarData = [
-  {
-    text: "My Progress Tracker",
-    icon: <MdDashboard />,
-    link: "/student/dashboard/overview",
-  },
-  {
-    text: "HTML/CSS Courses",
-    icon: <FaLaptopCode />,
-    link: "/student/dashboard/courses",
-  },
-  {
-    text: "My Enrollments",
-    icon: <SiProgress />,
-    link: "/student/dashboard/enrollments",
-  },
-  {
-    text: "Practice Lessons",
-    icon: <FaGraduationCap />,
-    link: "/student/dashboard/course/support_lessons",
-  },
-  {
-    text: "Javascript Courses",
-    icon: <AiFillCode />,
-    link: "/student/comp",
-  },
+	{
+		text: "My Progress Tracker",
+		icon: <MdDashboard />,
+		link: "/student/dashboard/overview",
+	},
+	{
+		text: "HTML/CSS Courses",
+		icon: <FaLaptopCode />,
+		link: "/student/dashboard/courses",
+	},
+	{
+		text: "My Enrollments",
+		icon: <SiProgress />,
+		link: "/student/dashboard/enrollments",
+	},
+	{
+		text: "Leaderboard",
+		icon: <FaTrophy />,
+		link: "/student/dashboard/leaderboard",
+	},
+	{
+		text: "Practice Lessons",
+		icon: <FaGraduationCap />,
+		link: "/student/dashboard/course/support_lessons",
+	},
+	{
+		text: "Javascript Courses",
+		icon: <AiFillCode />,
+		link: "/js/lesson1",
+	},
 
-  {
-    text: "Code Labratory",
-    icon: <SiScilab />,
-    link: "/student/comp",
-  },
-  {
-    text: "Dev Collab Platform",
-    icon: <TbSocial />,
-    link: "/student/comp",
-  },
+	{
+		text: "Code Labratory",
+		icon: <SiScilab />,
+		link: "/student/comp",
+	},
+	{
+		text: "Dev Collab Platform",
+		icon: <TbSocial />,
+		link: "/student/comp",
+	},
 ];
 
 export default studentSidebarData;
