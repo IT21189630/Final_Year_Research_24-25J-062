@@ -45,20 +45,26 @@ import CreateLesson from "./pages/pages-admin/create-lesson/CreateLesson";
 import CreateCourse from "./pages/pages-admin/create-course/CreateCourse";
 import UpdateCourse from "./pages/pages-admin/update-course/UpdateCourse";
 import CreateRecommendation from "./pages/pages-admin/create-recommendation-lesson/CreateRecommendation";
+import Leaderboard from "./pages/pages-student/leaderboard/Leaderboard";
+import AchievementsPage from "./pages/pages-student/achievements/AchievementsPage";
+import CoinsPage from "./pages/pages-student/coins/CoinsPage";
 // m2 page imports
 
 // m3 page imports
 
 // m4 page imports
 
+// js lesson page imports
+import JavaScriptLesson1 from "./courses/javascript/lesson-1/JSLesson1";
+
 function App() {
-  return (
-    <div className="App">
-      <Routes>
-        <Route path="/" element={<SignIn />} />
-        <Route path="/sign-in" element={<SignIn />} />
-        <Route path="/sign-up" element={<Signup />} />
-        <Route path="*" element={<NotFound />} />
+	return (
+		<div className="App">
+			<Routes>
+				<Route path="/" element={<SignIn />} />
+				<Route path="/sign-in" element={<SignIn />} />
+				<Route path="/sign-up" element={<Signup />} />
+				<Route path="*" element={<NotFound />} />
 
         {/* admin page routes */}
         <Route path="/admin/dashboard" element={<AdminProtectedRoute />}>
@@ -83,57 +89,82 @@ function App() {
           </Route>
         </Route>
 
-        {/* student page routes */}
-        <Route path="/student/dashboard" element={<StudentProtectedRoute />}>
-          <Route path="/student/dashboard/" element={<StudentDashboard />}>
-            <Route path="/student/dashboard/" element={<MainScreenStudent />} />
-            <Route
-              path="/student/dashboard/courses"
-              element={<CourseDisplayer />}
-            />
-            <Route
-              path="/student/dashboard/enrollments"
-              element={<MyEnrollments />}
-            />
-            <Route
-              path="/student/dashboard/course/levels/:id"
-              element={<LevelDisplayer />}
-            />
-            <Route
-              path="/student/dashboard/course/support_lessons"
-              element={<SupportLessonsDisplayer />}
-            />
-            <Route
-              path="/student/dashboard/overview"
-              element={<MainScreenStudent />}
-            />
-          </Route>
-        </Route>
+				{/* student page routes */}
+				<Route
+					path="/student/dashboard"
+					element={<StudentProtectedRoute />}
+				>
+					<Route
+						path="/student/dashboard/"
+						element={<StudentDashboard />}
+					>
+						<Route
+							path="/student/dashboard/"
+							element={<MainScreenStudent />}
+						/>
+						<Route
+							path="/student/dashboard/courses"
+							element={<CourseDisplayer />}
+						/>
+						<Route
+							path="/student/dashboard/enrollments"
+							element={<MyEnrollments />}
+						/>
+						<Route
+							path="/student/dashboard/course/levels/:id"
+							element={<LevelDisplayer />}
+						/>
+						<Route
+							path="/student/dashboard/course/support_lessons"
+							element={<SupportLessonsDisplayer />}
+						/>
+						<Route
+							path="/student/dashboard/leaderboard"
+							element={<Leaderboard />}
+						/>
+						<Route
+							path="/student/dashboard/achievements"
+							element={<AchievementsPage />}
+						/>
+						<Route
+							path="/student/dashboard/coins"
+							element={<CoinsPage />}
+						/>
+						<Route
+							path="/student/dashboard/overview"
+							element={<MainScreenStudent />}
+						/>
+					</Route>
+				</Route>
 
-        <Route path="/lesson1" element={<Lesson1 />} />
-        <Route path="/lesson2" element={<Lesson2 />} />
-        <Route path="/lesson3" element={<Lesson3 />} />
-        <Route path="/lesson4" element={<Lesson4 />} />
-        <Route path="/lesson5" element={<Lesson5 />} />
-        <Route path="/lesson6" element={<Lesson6 />} />
-        <Route path="/lesson7" element={<Lesson7 />} />
-        <Route path="/lesson8" element={<Lesson8 />} />
-        <Route path="/lesson9" element={<Lesson9 />} />
-        <Route path="/lesson10" element={<Lesson10 />} />
-        <Route path="/lesson20" element={<HtmlProject />} />
+				{/* Student standalone routes */}
+
+				<Route path="/lesson1" element={<Lesson1 />} />
+				<Route path="/lesson2" element={<Lesson2 />} />
+				<Route path="/lesson3" element={<Lesson3 />} />
+				<Route path="/lesson4" element={<Lesson4 />} />
+				<Route path="/lesson5" element={<Lesson5 />} />
+				<Route path="/lesson6" element={<Lesson6 />} />
+				<Route path="/lesson7" element={<Lesson7 />} />
+				<Route path="/lesson8" element={<Lesson8 />} />
+				<Route path="/lesson9" element={<Lesson9 />} />
+				<Route path="/lesson10" element={<Lesson10 />} />
+				<Route path="/lesson20" element={<HtmlProject />} />
         <Route path="/html-proj/challenge" element={<HtmlProjectHard />} />
         <Route path="/html-proj/easy" element={<HtmlProjectEasy />} />
-        <Route path="/lesson21" element={<Lesson21 />} />
+				<Route path="/lesson21" element={<Lesson21 />} />
         <Route path="/lesson21A" element={<Lesson21A />} />
-        <Route path="/lesson22" element={<Lesson22 />} />
-        <Route path="/lesson23" element={<Lesson23 />} />
-        <Route path="/lesson24" element={<Lesson24 />} />
-        <Route path="/lesson25" element={<Lesson25 />} />
-        <Route path="/lesson26" element={<Lesson26 />} />
-        <Route path="/lesson27" element={<Lesson27 />} />
-      </Routes>
-    </div>
-  );
+				<Route path="/lesson22" element={<Lesson22 />} />
+				<Route path="/lesson23" element={<Lesson23 />} />
+				<Route path="/lesson24" element={<Lesson24 />} />
+				<Route path="/lesson25" element={<Lesson25 />} />
+				<Route path="/lesson26" element={<Lesson26 />} />
+				<Route path="/lesson27" element={<Lesson27 />} />
+
+				<Route path="/js/lesson1" element={<JavaScriptLesson1 />} />
+			</Routes>
+		</div>
+	);
 }
 
 export default App;
