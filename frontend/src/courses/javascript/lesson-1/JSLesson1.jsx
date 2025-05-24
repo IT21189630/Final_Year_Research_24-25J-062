@@ -61,6 +61,33 @@ function JSLesson1() {
 		}
 	};
 
+	const markLessonComplete = async (score) => {
+		try {
+			const response = await axios.post(
+				`${API_BASE_URL}/js-progress/complete`,
+				{
+					userId: user_id,
+					lessonId,
+					score,
+				}
+			);
+
+			if (response.data.success) {
+				console.log("Lesson marked as complete:", response.data);
+				if (response.data.progress.scoreAdded > 0) {
+					toast.success(
+						`🚀 Mission Complete! +${response.data.progress.scoreAdded} points added to your total score!`
+					);
+				} else {
+					toast.success("🚀 Mission Complete! (Score not improved)");
+				}
+			}
+		} catch (error) {
+			console.error("Error marking lesson complete:", error);
+			toast.error("Mission completed but couldn't update progress!");
+		}
+	};
+
 	const validateAnswer = async (consumedTime) => {
 		if (missionCompleted || processingMission) {
 			return;
@@ -94,8 +121,11 @@ function JSLesson1() {
 			// Get AI feedback
 			await getAIFeedback(jsContent, score, consumedTime);
 
-			// Update performance in backend
+			// Update performance in backend (existing AI integration)
 			await updatePerformance(score, consumedTime);
+
+			// Mark lesson as completed (new JS progress tracking)
+			await markLessonComplete(score);
 
 			setProcessingMission(false);
 			setShowModal(true);

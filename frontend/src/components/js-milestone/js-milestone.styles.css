@@ -13,6 +13,15 @@
 	box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3);
 }
 
+/* Completed lesson styling */
+.js-milestone-container.completed {
+	background-color: #27ae60; /* Green for completed */
+}
+
+.js-milestone-container.completed:hover {
+	box-shadow: 0 10px 20px rgba(39, 174, 96, 0.3);
+}
+
 .js-level-navigator {
 	width: 100%;
 	height: 100%;
@@ -41,6 +50,11 @@
 	font-weight: 600;
 	color: white;
 	background: linear-gradient(135deg, #f39c12, #e67e22);
+}
+
+/* Completed lesson content */
+.js-milestone-container.completed .js-level-content {
+	background: linear-gradient(135deg, #27ae60, #2ecc71);
 }
 
 .js-level-indicator {
@@ -84,6 +98,26 @@
 	border: 2px solid white;
 }
 
+/* Completion indicator */
+.js-completion-indicator {
+	width: 30px;
+	height: 30px;
+	background-color: #2ecc71;
+	border-radius: 50%;
+	position: absolute;
+	color: white;
+	left: -10px;
+	top: -10px;
+	z-index: 3;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	font-weight: 600;
+	font-size: 1.2em;
+	border: 2px solid white;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 /* Lesson info tooltip */
 .js-lesson-info {
 	position: absolute;
@@ -116,7 +150,7 @@
 .js-milestone-container:hover .js-lesson-info {
 	opacity: 1;
 	visibility: visible;
-	bottom: -90px;
+	bottom: -110px;
 }
 
 .js-lesson-title {
@@ -133,6 +167,13 @@
 	color: #ecf0f1;
 }
 
+.js-best-score {
+	margin: 0 0 8px 0;
+	font-size: 0.75em;
+	font-weight: 600;
+	color: #f1c40f;
+}
+
 .js-lesson-status {
 	font-size: 0.7em;
 	font-weight: 500;
@@ -144,6 +185,14 @@
 /* Animations for unlocked state */
 .js-milestone-container .js-level-navigator.unlocked:hover .js-level-content {
 	background: linear-gradient(135deg, #e67e22, #d35400);
+	transform: scale(1.05);
+}
+
+/* Completed lesson hover animation */
+.js-milestone-container.completed
+	.js-level-navigator.unlocked:hover
+	.js-level-content {
+	background: linear-gradient(135deg, #2ecc71, #27ae60);
 	transform: scale(1.05);
 }
 

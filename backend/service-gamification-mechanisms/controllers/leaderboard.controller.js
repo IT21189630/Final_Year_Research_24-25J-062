@@ -104,6 +104,50 @@ const updateUserScore = async (req, res) => {
 	}
 };
 
+// Add JS lesson score to existing user score (called by AI Integration Service)
+const addJsScore = async (req, res) => {
+	const { userId, score } = req.body;
+
+	if (!userId || score === undefined) {
+		return res
+			.status(400)
+			.json({ error: "User ID and score are required." });
+	}
+
+	try {
+		// Find existing leaderboard entry for user
+		let leaderboardEntry = await Leaderboard.findOne({ userId });
+
+		if (leaderboardEntry) {
+			// Add JS lesson score to existing total
+			leaderboardEntry.totalScore += score;
+			leaderboardEntry.lessonCount += 1;
+			await leaderboardEntry.save();
+		} else {
+			// Create new entry for user (first time completing any lesson)
+			leaderboardEntry = new Leaderboard({
+				userId,
+				totalScore: score,
+				lessonCount: 1,
+			});
+			await leaderboardEntry.save();
+		}
+
+		res.status(200).json({
+			success: true,
+			message: "JS lesson score added to leaderboard",
+			leaderboardEntry: {
+				userId: leaderboardEntry.userId,
+				totalScore: leaderboardEntry.totalScore,
+				lessonCount: leaderboardEntry.lessonCount,
+			},
+		});
+	} catch (error) {
+		console.error("Error adding JS score to leaderboard:", error);
+		res.status(500).json({ error: "Internal server error." });
+	}
+};
+
 // Sync leaderboard with performance records
 const syncLeaderboard = async (req, res) => {
 	try {
@@ -205,4 +249,9 @@ const syncLeaderboard = async (req, res) => {
 	}
 };
 
-module.exports = { getLeaderboard, updateUserScore, syncLeaderboard };
+module.exports = {
+	getLeaderboard,
+	updateUserScore,
+	syncLeaderboard,
+	addJsScore,
+};

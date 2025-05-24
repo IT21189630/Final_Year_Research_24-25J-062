@@ -4,7 +4,15 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import "./js-milestone.styles.css";
 
-function JsMilestone({ level, title, description, url, isUnlocked }) {
+function JsMilestone({
+	level,
+	title,
+	description,
+	url,
+	isUnlocked,
+	isCompleted,
+	bestScore,
+}) {
 	const navigate = useNavigate();
 
 	const handleMissionClick = () => {
@@ -16,9 +24,16 @@ function JsMilestone({ level, title, description, url, isUnlocked }) {
 	};
 
 	return (
-		<div className="js-milestone-container">
+		<div
+			className={`js-milestone-container ${
+				isCompleted ? "completed" : ""
+			}`}
+		>
 			{/* Checkpoint indicator for every 5th level */}
 			{level % 5 === 0 && <div className="js-cp-indicator">JS</div>}
+
+			{/* Completion indicator */}
+			{isCompleted && <div className="js-completion-indicator">✓</div>}
 
 			{/* Lock overlay for locked lessons */}
 			{!isUnlocked && (
@@ -43,8 +58,17 @@ function JsMilestone({ level, title, description, url, isUnlocked }) {
 			<div className="js-lesson-info">
 				<h4 className="js-lesson-title">{title}</h4>
 				<p className="js-lesson-description">{description}</p>
+				{isCompleted && bestScore > 0 && (
+					<p className="js-best-score">
+						🏆 Best Score: {bestScore} points
+					</p>
+				)}
 				<span className="js-lesson-status">
-					{isUnlocked ? "🚀 Ready to Launch" : "🔒 Locked"}
+					{isCompleted
+						? "✅ Completed"
+						: isUnlocked
+						? "🚀 Ready to Launch"
+						: "🔒 Locked"}
 				</span>
 			</div>
 		</div>

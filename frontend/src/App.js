@@ -49,6 +49,7 @@ import CoinsPage from "./pages/pages-student/coins/CoinsPage";
 
 // js lesson page imports
 import JavaScriptLesson1 from "./courses/javascript/lesson-1/JSLesson1";
+import JavaScriptLesson2 from "./courses/javascript/lesson-2/JSLesson2";
 
 function App() {
 	return (
@@ -149,6 +150,7 @@ function App() {
 				<Route path="/lesson27" element={<Lesson27 />} />
 
 				<Route path="/js/lesson1" element={<JavaScriptLesson1 />} />
+				<Route path="/js/lesson2" element={<JavaScriptLesson2 />} />
 			</Routes>
 		</div>
 	);
