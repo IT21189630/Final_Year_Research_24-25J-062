@@ -1,6 +1,7 @@
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
 
+
 // pages
 import Home from "./pages/home/Home";
 import SignIn from "./pages/signin/SignIn";
@@ -56,6 +57,7 @@ import CoinsPage from "./pages/pages-student/coins/CoinsPage";
 
 // js lesson page imports
 import JavaScriptLesson1 from "./courses/javascript/lesson-1/JSLesson1";
+import VirtualLab from "./pages/virtual-coding-lab/VirtualLab";
 
 function App() {
 	return (
@@ -134,6 +136,7 @@ function App() {
 							path="/student/dashboard/overview"
 							element={<MainScreenStudent />}
 						/>
+            <Route path="/student/dashboard/virtuallab" element={<VirtualLab />} />
 					</Route>
 				</Route>
 

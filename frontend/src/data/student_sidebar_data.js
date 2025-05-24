@@ -42,7 +42,7 @@ const studentSidebarData = [
 	{
 		text: "Code Labratory",
 		icon: <SiScilab />,
-		link: "/student/comp",
+		link: "/student/dashboard/virtuallab",
 	},
 	{
 		text: "Dev Collab Platform",
