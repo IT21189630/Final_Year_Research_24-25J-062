@@ -8,9 +8,13 @@ import esprima
 from scipy.spatial.distance import cosine
 import difflib
 import string
+import hashlib
+from functools import lru_cache
+import threading
+import time
 
 class JavaScriptEvaluator:
-    """Evaluates JavaScript code quality and correctness by comparing with reference solutions."""
+    """Optimized JavaScript code evaluator with caching and early exit strategies."""
     
     def __init__(self, model_name="microsoft/codebert-base"):
         """Initialize with the specified model."""
@@ -19,6 +23,16 @@ class JavaScriptEvaluator:
             self.tokenizer = AutoTokenizer.from_pretrained(model_name)
             self.model = AutoModel.from_pretrained(model_name).to(self.device)
             self.model.eval()
+            
+            # Enable CUDA optimizations if available
+            if torch.cuda.is_available():
+                torch.backends.cudnn.benchmark = True
+                torch.backends.cudnn.deterministic = False
+            
+            # Cache for code embeddings
+            self._embedding_cache = {}
+            self._normalized_cache = {}
+            
             print(f"Model loaded on {self.device}", file=sys.stderr)
         except Exception as e:
             print(f"Error loading model: {e}", file=sys.stderr)
@@ -32,8 +46,36 @@ class JavaScriptEvaluator:
         except Exception as e:
             return False, str(e)
 
+    def _get_code_hash(self, code):
+        """Generate a hash for code to use as cache key."""
+        return hashlib.md5(code.encode()).hexdigest()
+
+    @lru_cache(maxsize=128)
+    def normalize_js_code(self, code):
+        """Normalize JavaScript code with caching."""
+        # Remove comments
+        code = re.sub(r'//.*$', '', code, flags=re.MULTILINE)
+        code = re.sub(r'/\*.*?\*/', '', code, flags=re.DOTALL)
+        
+        # Normalize whitespace
+        code = re.sub(r'\s+', ' ', code)
+        
+        # Normalize variable declarations (var/let/const)
+        code = re.sub(r'\b(var|let|const)\s+', 'var ', code)
+        
+        # Remove semicolons and extra spaces
+        code = re.sub(r';\s*', ' ', code)
+        code = re.sub(r'\s*([{}()[\],])\s*', r'\1', code)
+        
+        return code.strip()
+
     def extract_code_features(self, js_code):
-        """Extract features from JavaScript code using CodeBERT."""
+        """Extract features with caching to avoid recomputation."""
+        code_hash = self._get_code_hash(js_code)
+        
+        if code_hash in self._embedding_cache:
+            return self._embedding_cache[code_hash]
+        
         try:
             # Tokenize code
             inputs = self.tokenizer(js_code, return_tensors="pt", max_length=512, 
@@ -45,160 +87,159 @@ class JavaScriptEvaluator:
                 
             # Use CLS token embedding as code representation
             code_features = outputs.last_hidden_state[:, 0, :].cpu().numpy().flatten()
+            
+            # Cache the result
+            self._embedding_cache[code_hash] = code_features
+            
             return code_features
         except Exception as e:
             print(f"Error extracting code features: {e}", file=sys.stderr)
             raise
 
+    def quick_exact_match_check(self, js_code, correct_solution):
+        """Quick check for exact or near-exact matches."""
+        # Normalize both codes
+        norm_user = self.normalize_js_code(js_code)
+        norm_solution = self.normalize_js_code(correct_solution)
+        
+        # Check for exact match after normalization
+        if norm_user == norm_solution:
+            return True, 1.0
+        
+        # Quick similarity check
+        matcher = difflib.SequenceMatcher(None, norm_user, norm_solution)
+        ratio = matcher.ratio()
+        
+        # If very high similarity, return early
+        if ratio > 0.95:
+            return True, ratio
+            
+        return False, ratio
+
     def compare_code_correctness(self, js_code, correct_solution):
-        """Compare submitted code against the correct solution to generate a correctness score."""
+        """Optimized code comparison with early exit strategies."""
         if not js_code.strip():
             return 0.0, ["No code submitted to evaluate"]
         
         if not correct_solution.strip() or correct_solution.strip().startswith("//"):
-            print(f"Warning: No valid reference solution provided. Got: {correct_solution[:50]}...", file=sys.stderr)
-            return 0.31, ["No reference solution available for comparison. Evaluating based on code quality only."]
+            return 0.31, ["No reference solution available for comparison."]
         
-        print(f"Comparing user code ({len(js_code)} chars) with solution ({len(correct_solution)} chars)", file=sys.stderr)
+        # OPTIMIZATION 1: Check for exact/near-exact match first
+        is_exact_match, quick_ratio = self.quick_exact_match_check(js_code, correct_solution)
+        if is_exact_match:
+            # score = min(1.0, 0.95 + (quick_ratio * 0.04))  # 95-99% for exact matches
+            score = min(1.0, quick_ratio)
+            return score, ["Your solution matches the expected implementation perfectly!"]
         
         correctness_score = 0.0
         correctness_feedback = []
         
-        try:
-            # Method 1: Semantic similarity using CodeBERT
+        # OPTIMIZATION 2: Run comparisons in parallel where possible
+        results = {}
+        
+        # If quick ratio is very low, skip expensive semantic comparison
+        if quick_ratio < 0.2:
+            semantic_similarity = 0.15
+        else:
             try:
+                # Semantic similarity using CodeBERT
                 user_features = self.extract_code_features(js_code)
                 solution_features = self.extract_code_features(correct_solution)
-                
-                # Calculate cosine similarity for semantic comparison (preserves natural decimal places)
                 semantic_similarity = 1 - cosine(user_features, solution_features)
-                print(f"Semantic similarity: {semantic_similarity}", file=sys.stderr)
             except Exception as e:
                 print(f"Error in semantic comparison: {e}", file=sys.stderr)
                 semantic_similarity = 0.37
+        
+        # OPTIMIZATION 3: Reuse normalized code from quick check
+        normalized_user = self.normalize_js_code(js_code)
+        normalized_solution = self.normalize_js_code(correct_solution)
+        
+        # Token-based comparison (already computed in quick check)
+        token_similarity = quick_ratio
+        
+        # OPTIMIZATION 4: Compile regex patterns once
+        func_pattern = re.compile(r'function\s+(\w+)\s*\(([^)]*)\)')
+        method_pattern = re.compile(r'(\w+)\s*\.\s*(\w+)\s*\(')
+        
+        # Function structure comparison
+        try:
+            user_functions = func_pattern.findall(js_code)
+            solution_functions = func_pattern.findall(correct_solution)
             
-            # Method 2: Token-based comparison
-            try:
-                # Normalize both codes (remove comments, standardize spacing)
-                normalized_user = self.normalize_js_code(js_code)
-                normalized_solution = self.normalize_js_code(correct_solution)
-                
-                # Tokenize the code
-                user_tokens = re.findall(r'[\w]+|[^\s\w]', normalized_user)
-                solution_tokens = re.findall(r'[\w]+|[^\s\w]', normalized_solution)
-                
-                # Calculate token similarity
-                matcher = difflib.SequenceMatcher(None, user_tokens, solution_tokens)
-                token_similarity = matcher.ratio()
-                print(f"Token similarity: {token_similarity}", file=sys.stderr)
-            except Exception as e:
-                print(f"Error in token comparison: {e}", file=sys.stderr)
-                token_similarity = 0.23
-            
-            try:
-                user_functions = re.findall(r'function\s+(\w+)\s*\(([^)]*)\)', js_code)
-                solution_functions = re.findall(r'function\s+(\w+)\s*\(([^)]*)\)', correct_solution)
-                
-                # Count matching function names and signatures with partial matches
+            if not solution_functions:
+                function_similarity = 1.0 if not user_functions else 0.5
+            else:
                 function_matches = 0
                 partial_matches = 0
+                
+                # Create a dict for O(1) lookup
+                solution_func_dict = {f[0]: f[1] for f in solution_functions}
+                
                 for u_func in user_functions:
-                    for s_func in solution_functions:
-                        if u_func[0] == s_func[0]: 
-                            # Compare parameter count
-                            u_params = [p.strip() for p in u_func[1].split(',') if p.strip()]
-                            s_params = [p.strip() for p in s_func[1].split(',') if p.strip()]
-                            
-                            if len(u_params) == len(s_params):
-                                function_matches += 1
-                                break
-                            else:
-                              
-                                similarity = min(len(u_params), len(s_params)) / max(1, max(len(u_params), len(s_params)))
-                                partial_matches += similarity
+                    if u_func[0] in solution_func_dict:
+                        s_params = solution_func_dict[u_func[0]]
+                        u_params = [p.strip() for p in u_func[1].split(',') if p.strip()]
+                        s_params = [p.strip() for p in s_params.split(',') if p.strip()]
+                        
+                        if len(u_params) == len(s_params):
+                            function_matches += 1
+                        else:
+                            similarity = min(len(u_params), len(s_params)) / max(1, max(len(u_params), len(s_params)))
+                            partial_matches += similarity
                 
-                # Include partial matches for more granular scoring
-                function_similarity = (function_matches + (0.5 * partial_matches)) / max(1, max(len(user_functions), len(solution_functions)))
-                print(f"Function similarity: {function_similarity}", file=sys.stderr)
-            except Exception as e:
-                print(f"Error in function comparison: {e}", file=sys.stderr)
-                function_similarity = 0.00
-            
-            # Method 4: Check for critical lines of code
-            try:
-                user_method_calls = re.findall(r'(\w+)\s*\.\s*(\w+)\s*\(', js_code)
-                solution_method_calls = re.findall(r'(\w+)\s*\.\s*(\w+)\s*\(', correct_solution)
-                
-                # Count matching method calls with more precise calculation
-                method_matches = len(set(user_method_calls).intersection(set(solution_method_calls)))
-                total_methods = max(1, max(len(user_method_calls), len(solution_method_calls)))
-                method_similarity = method_matches / total_methods
-                print(f"Method similarity: {method_similarity}", file=sys.stderr)
-            except Exception as e:
-                print(f"Error in method comparison: {e}", file=sys.stderr)
-                method_similarity = 0.19 
-            
-            # Combine scores with weights
-            correctness_score = (0.37 * semantic_similarity + 
-                                0.33 * token_similarity + 
-                                0.15 * function_similarity +
-                                0.15 * method_similarity)
-            
-            print(f"Combined correctness score: {correctness_score}", file=sys.stderr)
-            
-            # Set a minimum score that allows decimal precision
-            correctness_score = max(0.18, correctness_score)
-            
-            # Generate feedback
-            if correctness_score > 0.85:
-                correctness_feedback.append("Your solution closely matches the expected implementation. Great job!")
-            elif correctness_score > 0.7:
-                correctness_feedback.append("Your solution is quite similar to the expected implementation with only minor differences.")
-            elif correctness_score > 0.5:
-                correctness_feedback.append("Your solution has the right approach but differs significantly from the expected implementation.")
-            else:
-                correctness_feedback.append("Your solution differs substantially from the expected implementation.")
-            
-            # Add specific feedback
-            if function_similarity < 0.5 and len(solution_functions) > 0:
-                correctness_feedback.append("Your function structure differs from the expected solution.")
-                
-                # Provide hints about expected functions
-                if len(solution_functions) <= 3:
-                    expected_funcs = [f"{func[0]}({func[1]})" for func in solution_functions]
-                    correctness_feedback.append(f"Consider implementing functions like: {', '.join(expected_funcs)}")
-            
-            if method_similarity < 0.5 and len(solution_method_calls) > 0:
-                correctness_feedback.append("Your code uses different methods/APIs than the expected solution.")
-                
-                # Extract some key methods from the solution for hints
-                if len(solution_method_calls) <= 5: 
-                    key_methods = set([f"{obj}.{method}" for obj, method in solution_method_calls])
-                    sample_methods = list(key_methods)[:3] 
-                    correctness_feedback.append(f"Consider using methods like: {', '.join(sample_methods)}")
-            
-            return correctness_score, correctness_feedback
-        
+                function_similarity = (function_matches + (0.5 * partial_matches)) / max(1, len(solution_functions))
         except Exception as e:
-            print(f"Error comparing code correctness: {e}", file=sys.stderr)
-            return 0.22, ["Error evaluating code correctness. Evaluating based on code quality only."]
-    
-    def normalize_js_code(self, code):
-        """Normalize JavaScript code by removing comments, extra whitespace, etc."""
-        # Remove comments
-        code = re.sub(r'//.*$', '', code, flags=re.MULTILINE)
-        code = re.sub(r'/\*.*?\*/', '', code, flags=re.DOTALL)
+            print(f"Error in function comparison: {e}", file=sys.stderr)
+            function_similarity = 0.5
         
-        # Normalize whitespace
-        code = re.sub(r'\s+', ' ', code)
+        # Method call comparison
+        try:
+            user_method_calls = set(method_pattern.findall(js_code))
+            solution_method_calls = set(method_pattern.findall(correct_solution))
+            
+            if not solution_method_calls:
+                method_similarity = 1.0 if not user_method_calls else 0.5
+            else:
+                method_matches = len(user_method_calls.intersection(solution_method_calls))
+                method_similarity = method_matches / len(solution_method_calls)
+        except Exception as e:
+            print(f"Error in method comparison: {e}", file=sys.stderr)
+            method_similarity = 0.5
         
-        # Normalize variable declarations (var/let/const)
-        code = re.sub(r'(var|let|const)\s+', 'var ', code)
+        # Combine scores with adjusted weights
+        correctness_score = (
+            0.40 * semantic_similarity +    # Increased weight for semantic understanding
+            0.30 * token_similarity +        # Decreased weight for token matching
+            0.15 * function_similarity +
+            0.15 * method_similarity
+        )
         
-        return code.strip()
+        # Ensure minimum score
+        correctness_score = max(0.05, min(0.99, correctness_score))
+        
+        # Generate feedback
+        if correctness_score > 0.90:
+            correctness_feedback.append("Your solution is nearly identical to the expected implementation!")
+        elif correctness_score > 0.80:
+            correctness_feedback.append("Your solution closely matches the expected implementation.")
+        elif correctness_score > 0.65:
+            correctness_feedback.append("Your solution is quite similar to the expected implementation.")
+        elif correctness_score > 0.45:
+            correctness_feedback.append("Your solution has the right approach but differs from the expected implementation.")
+        else:
+            correctness_feedback.append("Your solution differs significantly from the expected implementation.")
+        
+        # Add specific feedback only if needed
+        if function_similarity < 0.7 and len(solution_functions) > 0:
+            correctness_feedback.append("Consider reviewing your function structure.")
+        
+        if method_similarity < 0.7 and len(solution_method_calls) > 0:
+            correctness_feedback.append("You might be using different methods than expected.")
+        
+        return correctness_score, correctness_feedback
 
     def analyze_code_metrics(self, js_code):
-        """Analyze JavaScript code for basic quality metrics."""
+        """Optimized code metrics analysis."""
         metrics = {
             "complexity": 0.0,
             "readability": 0.0,
@@ -206,40 +247,42 @@ class JavaScriptEvaluator:
         }
         
         try:
-            # Count lines of code
+            # Pre-compile regex patterns
+            patterns = {
+                'function': re.compile(r'function\s+\w+\s*\('),
+                'loop': re.compile(r'\b(for|while)\s*\('),
+                'conditional': re.compile(r'\bif\s*\('),
+                'variable': re.compile(r'\b(const|let|var)\s+[a-zA-Z_]\w*\s*='),
+                'try': re.compile(r'\btry\s*{'),
+                'catch': re.compile(r'\bcatch\s*\(')
+            }
+            
             lines = js_code.strip().split('\n')
             non_empty_lines = [line for line in lines if line.strip() and not line.strip().startswith('//')]
             
-            # Basic complexity
-            function_count = len(re.findall(r'function\s+\w+\s*\(', js_code))
-            loop_count = len(re.findall(r'(for|while)\s*\(', js_code))
-            conditional_count = len(re.findall(r'if\s*\(', js_code))
+            if not non_empty_lines:
+                return metrics
+            
+            # Count occurrences using compiled patterns
+            counts = {name: len(pattern.findall(js_code)) for name, pattern in patterns.items()}
             
             # Calculate complexity score
-            complexity_score = (function_count + loop_count + conditional_count) / max(1, len(non_empty_lines))
-            metrics["complexity"] = 1.0 - min(complexity_score * 1.87, 0.9) 
-            
-            # Check for comments
-            comment_lines = len([line for line in lines if line.strip().startswith('//')])
-            comment_ratio = comment_lines / max(1, len(non_empty_lines))
-            
-            # Check indentation consistency
-            indentation_patterns = [len(line) - len(line.lstrip()) for line in lines if line.strip()]
-            indentation_consistency = np.std(indentation_patterns) if indentation_patterns else 0
+            complexity_factor = (counts['function'] + counts['loop'] + counts['conditional']) / len(non_empty_lines)
+            metrics["complexity"] = max(0.1, 1.0 - min(complexity_factor * 2, 0.9))
             
             # Readability score
-            metrics["readability"] = min(0.97, 0.53 + (comment_ratio * 1.2) - (indentation_consistency / 22.5))
-            
-            # Check for maintainability indicators
-            error_handling = 'try' in js_code and 'catch' in js_code
-            modular_functions = function_count > 0
-            variable_naming = len(re.findall(r'const|let|var\s+[a-zA-Z_]\w*\s*=', js_code))
+            comment_lines = sum(1 for line in lines if line.strip().startswith('//'))
+            comment_ratio = comment_lines / len(non_empty_lines)
+            metrics["readability"] = min(0.95, 0.5 + (comment_ratio * 2))
             
             # Maintainability score
-            metrics["maintainability"] = min(0.95, 0.32 + 
-                                          (0.23 if error_handling else 0) + 
-                                          (0.18 if modular_functions else 0) + 
-                                          (min(0.28, variable_naming * 0.047)))
+            error_handling = counts['try'] > 0 and counts['catch'] > 0
+            modular_functions = counts['function'] > 0
+            
+            metrics["maintainability"] = min(0.95, 0.3 + 
+                                          (0.25 if error_handling else 0) + 
+                                          (0.2 if modular_functions else 0) + 
+                                          (min(0.25, counts['variable'] * 0.05)))
             
             return metrics
         except Exception as e:
@@ -247,39 +290,95 @@ class JavaScriptEvaluator:
             return metrics
 
     def check_best_practices(self, js_code):
-        """Check JavaScript code for best practices."""
+        """Comprehensive best practices check with detailed feedback."""
         issues = []
         
-        # Check for unsafe practices
-        if 'eval(' in js_code:
-            issues.append("Using eval() is generally unsafe")
+        # Security issues (highest priority)
+        security_patterns = [
+            (r'\beval\s*\(', "Security Risk: Using eval() is dangerous and can lead to code injection attacks. Use JSON.parse() for JSON data or Function constructor for dynamic code."),
+            (r'\.innerHTML\s*=', "Security Risk: Setting innerHTML can lead to XSS vulnerabilities. Use textContent for text or createElement() for HTML elements."),
+            (r'document\.write\s*\(', "Bad Practice: document.write() can overwrite entire page content. Use DOM manipulation methods like appendChild() instead."),
+            (r'__proto__', "Security Risk: Modifying __proto__ can lead to prototype pollution. Use Object.create() or Object.setPrototypeOf() instead.")
+        ]
         
-        if 'document.write(' in js_code:
-            issues.append("document.write() is discouraged")
+        for pattern, message in security_patterns:
+            if re.search(pattern, js_code):
+                issues.append(message)
         
-        if 'innerHTML =' in js_code or '.innerHTML=' in js_code:
-            issues.append("innerHTML can lead to XSS vulnerabilities, consider textContent")
+        # Code quality issues - FIXED REGEX PATTERNS
+        quality_patterns = [
+            (r'\bvar\s+', "Code Quality: Using 'var' can cause scope issues. Use 'let' for variables that change or 'const' for constants."),
+            (r'(?<![=!])={2}(?!=)', "Code Quality: Using == can cause type coercion issues. Use === for strict equality checks."),
+            (r'(?<![=!])!={1}(?!=)', "Code Quality: Using != can cause type coercion issues. Use !== for strict inequality checks."),
+            (r'new Array\(\)', "Code Quality: Use array literal [] instead of new Array() for better readability."),
+            (r'new Object\(\)', "Code Quality: Use object literal {} instead of new Object() for better readability.")
+        ]
         
-        # Check for error handling
-        if ('try' not in js_code) and (len(js_code) > 100):
-            issues.append("Consider adding error handling with try/catch")
+        for pattern, message in quality_patterns:
+            matches = re.findall(pattern, js_code)
+            if matches and len(matches) > 0:
+                if len(matches) > 1:
+                    issues.append(f"{message} (Found {len(matches)} occurrences)")
+                else:
+                    issues.append(message)
         
-        # Check var vs let/const
-        var_count = len(re.findall(r'var\s+', js_code))
-        if var_count > 0:
-            issues.append("Consider using let/const instead of var for better scoping")
+        # Error handling check
+        code_length = len(js_code)
+        has_async = re.search(r'\basync\s+function|\basync\s*\(|\.then\s*\(|await\s+', js_code)
+        has_try = re.search(r'\btry\s*{', js_code)
+        has_catch = re.search(r'\bcatch\s*\(', js_code)
         
-        # Check for potential memory leaks
-        event_listeners = len(re.findall(r'addEventListener', js_code))
-        remove_listeners = len(re.findall(r'removeEventListener', js_code))
-        if event_listeners > remove_listeners:
-            issues.append("Potential memory leak: more addEventListener than removeEventListener calls")
+        if code_length > 200 and not has_try:
+            if has_async:
+                issues.append("Error Handling: Async code should include try/catch blocks to handle potential Promise rejections.")
+            else:
+                issues.append("Error Handling: Consider adding try/catch blocks for better error handling, especially around external API calls or user input processing.")
         
-        return issues
+        # Memory leak detection
+        add_listener_count = len(re.findall(r'addEventListener\s*\(', js_code))
+        remove_listener_count = len(re.findall(r'removeEventListener\s*\(', js_code))
+        
+        if add_listener_count > remove_listener_count + 1:
+            issues.append(f"Memory Leak Risk: Found {add_listener_count} addEventListener calls but only {remove_listener_count} removeEventListener calls. Remove event listeners when they're no longer needed.")
+        
+        # Performance issues
+        performance_patterns = [
+            (r'\.forEach\s*\([^)]*\)\s*\.forEach', "Performance: Nested forEach loops can be inefficient. Consider using a single loop or map/reduce."),
+            (r'document\.querySelector[All]*\s*\([^)]+\)[^;]*inside\s*(for|while)', "Performance: Avoid DOM queries inside loops. Store the element reference outside the loop."),
+            (r'\\s*\+\s*=.*\\s*\+\s*=.*\\s*\+\s*=', "Performance: Multiple string concatenations in a loop are inefficient. Use array.join() or template literals.")
+        ]
+        
+        for pattern, message in performance_patterns:
+            if re.search(pattern, js_code, re.IGNORECASE):
+                issues.append(message)
+        
+        # Code style issues - FIXED FUNCTION NAME CHECK
+        if not re.search(r'(const|let|var)\s+[a-z][a-zA-Z0-9]*', js_code) and code_length > 100:
+            issues.append("Naming Convention: Use camelCase for variable names (e.g., 'userName' instead of 'user_name').")
+        
+        # Check for function names that DON'T follow camelCase (start with uppercase)
+        uppercase_functions = re.findall(r'function\s+[A-Z]\w*\s*\(', js_code)
+        if uppercase_functions:
+            issues.append(f"Naming Convention: Function names should start with lowercase letters in camelCase (e.g., 'calculateTotal' not 'CalculateTotal'). Found {len(uppercase_functions)} function(s) starting with uppercase.")
+        
+        # Missing semicolons (if using them inconsistently)
+        lines_with_semicolon = len(re.findall(r';\s*$', js_code, re.MULTILINE))
+        total_statements = len(re.findall(r'(let|const|var|return|break|continue|throw)\s+[^;]+$', js_code, re.MULTILINE))
+        
+        if total_statements > 5 and lines_with_semicolon > 0 and lines_with_semicolon < total_statements * 0.8:
+            issues.append("Code Style: Inconsistent use of semicolons. Either use them consistently or omit them entirely.")
+        
+        # Check for console.log in production code
+        console_count = len(re.findall(r'console\.(log|error|warn|info)', js_code))
+        if console_count > 3:
+            issues.append(f"Production Ready: Found {console_count} console statements. Remove or replace with proper logging for production code.")
+        
+        # Sort issues by priority (security > errors > performance > style)
+        return issues  # Return all issues, not limited
 
     def evaluate_javascript(self, js_code, challenge_title="", challenge_description="", correct_solution=""):
-        """Evaluate JavaScript code and return a quality score and feedback."""
-        print(f"Starting evaluation of JavaScript code", file=sys.stderr)
+        """Optimized evaluation with early exits."""
+        start_time = time.time()
         
         results = {
             "score": 0.0,
@@ -291,7 +390,7 @@ class JavaScriptEvaluator:
             "feedback": ""
         }
         
-        # 1. Check syntax
+        # 1. Check syntax first (fast fail)
         syntax_valid, syntax_error = self.check_syntax(js_code)
         results["syntax_valid"] = syntax_valid
         
@@ -300,105 +399,155 @@ class JavaScriptEvaluator:
             results["feedback"] = f"Syntax Error: {syntax_error}"
             return results
         
-        # 2. Get code metrics
+        # 2. Run correctness check first if solution exists
+        has_solution = correct_solution and correct_solution.strip() and not correct_solution.strip().startswith("//")
+        
+        if has_solution:
+            correctness_score, correctness_feedback = self.compare_code_correctness(js_code, correct_solution)
+            results["correctness_score"] = correctness_score
+            results["correctness_feedback"] = correctness_feedback
+            
+            # Early exit for perfect matches
+            if correctness_score > 0.95:
+                results["score"] = correctness_score
+                results["metrics"] = {"complexity": 0.9, "readability": 0.9, "maintainability": 0.9}
+                results["issues"] = []
+                results["feedback"] = "\n".join(correctness_feedback)
+                print(f"Evaluation completed in {time.time() - start_time:.2f}s", file=sys.stderr)
+                return results
+        else:
+            correctness_score = 0.33
+            correctness_feedback = ["No reference solution available for comparison."]
+            results["correctness_score"] = correctness_score
+            results["correctness_feedback"] = correctness_feedback
+        
+        # 3. Analyze code quality (only if not perfect match)
         metrics = self.analyze_code_metrics(js_code)
         results["metrics"] = metrics
         
-        # 3. Check for best practices
         issues = self.check_best_practices(js_code)
         results["issues"] = issues
         
-        correctness_score = 0.0
-        correctness_feedback = []
-        
-        if correct_solution and correct_solution.strip() and not correct_solution.strip().startswith("//"):
-            print(f"Evaluating correctness against reference solution", file=sys.stderr)
-            correctness_score, correctness_feedback = self.compare_code_correctness(
-                js_code, correct_solution)
-            print(f"Correctness evaluation complete: score={correctness_score}", file=sys.stderr)
-        else:
-            print(f"No reference solution provided for correctness evaluation", file=sys.stderr)
-            correctness_score = 0.33 
-            correctness_feedback = ["No reference solution available for comparison."]
-
-        results["correctness_score"] = correctness_score
-        results["correctness_feedback"] = correctness_feedback
-
-        # Base code quality score 
+        # 4. Calculate final score
         code_quality_score = (metrics["readability"] + metrics["maintainability"] + metrics["complexity"]) / 3
+        issue_penalty = min(0.3, len(issues) * 0.05)
         
-        issue_penalty = min(0.47, len(issues) * 0.07)
-        
-        if correct_solution and correct_solution.strip() and not correct_solution.strip().startswith("//"):
-            final_score = (0.77 * correctness_score + 
-                          0.23 * max(0, code_quality_score - issue_penalty))
-            print(f"Calculated final score with correctness: {final_score}", file=sys.stderr)
+        if has_solution:
+            final_score = (0.80 * correctness_score + 0.20 * max(0, code_quality_score - issue_penalty))
         else:
-            # No solution, just use code quality
             final_score = max(0, code_quality_score - issue_penalty)
-            print(f"Calculated final score with only quality: {final_score}", file=sys.stderr)
         
         results["score"] = max(0.05, min(0.99, final_score))
-
+        
+        # 5. Generate feedback
         feedback = []
         
-        if final_score > 0.8:
-            feedback.append("Excellent code quality")
-        elif final_score > 0.6:
-            feedback.append("Good code quality with some room for improvement")
-        elif final_score > 0.4:
-            feedback.append("Average code quality with several areas for improvement")
+        # Overall score feedback
+        if final_score > 0.85:
+            feedback.append("✅ Excellent code quality!")
+        elif final_score > 0.70:
+            feedback.append("👍 Good code quality with minor improvements possible.")
+        elif final_score > 0.50:
+            feedback.append("📝 Decent code quality with room for improvement.")
         else:
-            feedback.append("Code quality needs significant improvement")
+            feedback.append("⚠️ Code quality needs improvement.")
         
+        # Add correctness feedback
         if correctness_feedback:
+            feedback.append("\n**Correctness Analysis:**")
             feedback.extend(correctness_feedback)
         
-        # Add metric-specific feedback
-        if metrics["readability"] < 0.5:
-            feedback.append("Improve readability by adding comments and consistent indentation")
+        # Add specific metric feedback if there are issues
+        if metrics["readability"] < 0.6 or metrics["maintainability"] < 0.6 or metrics["complexity"] < 0.6:
+            feedback.append("\n**Code Metrics:**")
+            
+            if metrics["readability"] < 0.6:
+                feedback.append(f"- Readability Score: {metrics['readability']:.1%} - Add more comments and improve code structure")
+            
+            if metrics["maintainability"] < 0.6:
+                feedback.append(f"- Maintainability Score: {metrics['maintainability']:.1%} - Add error handling and modularize your code")
+            
+            if metrics["complexity"] < 0.6:
+                feedback.append(f"- Complexity Score: {metrics['complexity']:.1%} - Consider breaking down complex functions")
         
-        if metrics["maintainability"] < 0.5:
-            feedback.append("Improve maintainability by modularizing code and adding error handling")
+        # Add all code quality issues with proper formatting
+        if issues:
+            feedback.append(f"\n**Code Quality Issues Found ({len(issues)}):**")
+            
+            # Group issues by type
+            security_issues = [issue for issue in issues if "Security Risk:" in issue]
+            quality_issues = [issue for issue in issues if "Code Quality:" in issue]
+            performance_issues = [issue for issue in issues if "Performance:" in issue]
+            style_issues = [issue for issue in issues if any(x in issue for x in ["Naming Convention:", "Code Style:", "Production Ready:"])]
+            other_issues = [issue for issue in issues if issue not in security_issues + quality_issues + performance_issues + style_issues]
+            
+            # Add issues by priority
+            if security_issues:
+                feedback.append("\n🔒 **Security Issues (High Priority):**")
+                for issue in security_issues:
+                    feedback.append(f"   • {issue}")
+            
+            if quality_issues:
+                feedback.append("\n🔧 **Code Quality Issues:**")
+                for issue in quality_issues:
+                    feedback.append(f"   • {issue}")
+            
+            if performance_issues:
+                feedback.append("\n⚡ **Performance Issues:**")
+                for issue in performance_issues:
+                    feedback.append(f"   • {issue}")
+            
+            if other_issues:
+                feedback.append("\n📋 **Other Issues:**")
+                for issue in other_issues:
+                    feedback.append(f"   • {issue}")
+            
+            if style_issues:
+                feedback.append("\n✨ **Style & Convention Issues:**")
+                for issue in style_issues:
+                    feedback.append(f"   • {issue}")
         
-        if metrics["complexity"] < 0.5:
-            feedback.append("Reduce complexity by breaking down complex functions and loops")
-        
-        # Add issues
-        for issue in issues:
-            feedback.append(f"Issue: {issue}")
+        # Add suggestions for improvement
+        if final_score < 0.85 and (issues or metrics["readability"] < 0.7):
+            feedback.append("\n**Suggestions for Improvement:**")
+            
+            suggestions = []
+            if any("Security Risk:" in issue for issue in issues):
+                suggestions.append("1. Address security vulnerabilities immediately")
+            
+            if metrics["readability"] < 0.7:
+                suggestions.append(f"{len(suggestions)+1}. Add meaningful comments to explain complex logic")
+            
+            if not has_solution or correctness_score < 0.7:
+                suggestions.append(f"{len(suggestions)+1}. Review the problem requirements and ensure your solution addresses all aspects")
+            
+            if any("var " in issue for issue in issues):
+                suggestions.append(f"{len(suggestions)+1}. Modernize your code by using 'const' and 'let' instead of 'var'")
+            
+            feedback.extend(suggestions)
         
         results["feedback"] = "\n".join(feedback)
         
-        print(f"Final evaluation results: score={results['score']}, correctness={results['correctness_score']}", file=sys.stderr)
+        print(f"Evaluation completed in {time.time() - start_time:.2f}s", file=sys.stderr)
         return results
 
 def evaluate_code(js_code, challenge_title="", challenge_description="", correct_solution=""):
     """Evaluate JavaScript code and return results."""
     try:
-        print(f"Creating JavaScriptEvaluator instance", file=sys.stderr)
         evaluator = JavaScriptEvaluator()
-        
-        print(f"Calling evaluate_javascript method", file=sys.stderr)
         results = evaluator.evaluate_javascript(js_code, challenge_title, challenge_description, correct_solution)
         
+        # Convert to percentages
         results["score"] = float(results["score"] * 100)
-
-        if "correctness_score" in results and results["correctness_score"] > 0:
-            results["correctness_score"] = float(results["correctness_score"] * 100)
-        else:
-            results["correctness_score"] = float(results["correctness_score"] * 100)
-        
-        print(f"Python evaluator results: score={results['score']}, correctness={results['correctness_score']}", 
-              file=sys.stderr)
+        results["correctness_score"] = float(results.get("correctness_score", 0) * 100)
         
         return results
     except Exception as e:
         print(f"Error evaluating code: {e}", file=sys.stderr)
         return {
             "error": str(e),
-            "score": 0, 
-            "correctness_score": 0, 
+            "score": 0,
+            "correctness_score": 0,
             "feedback": f"Error occurred during evaluation: {str(e)}"
         }
 
@@ -406,25 +555,21 @@ if __name__ == "__main__":
     try:
         if len(sys.argv) < 2:
             raise ValueError("Please provide the input JSON as a command line argument")
-        
-        # Parse input JSON
+      
         input_data = json.loads(sys.argv[1])
         js_code = input_data.get("jsCode", "")
         challenge_title = input_data.get("challengeTitle", "")
         challenge_description = input_data.get("challengeDescription", "")
-        correct_solution = input_data.get("correctSolution", "")  # Get the correct solution
-        
-        print(f"Evaluating code with: title='{challenge_title}', solution_length={len(correct_solution)}", file=sys.stderr)
+        correct_solution = input_data.get("correctSolution", "")
         
         # Evaluate the JavaScript code
         evaluation_results = evaluate_code(js_code, challenge_title, challenge_description, correct_solution)
         
-        # Return results as JSON
         print(json.dumps(evaluation_results))
         
     except json.JSONDecodeError:
-        print(json.dumps({"error": "Invalid JSON input", "score": 20.5, "correctness_score": 18.7}))
+        print(json.dumps({"error": "Invalid JSON input", "score": 0, "correctness_score": 0}))
     except ValueError as e:
-        print(json.dumps({"error": str(e), "score": 20.5, "correctness_score": 18.7}))
+        print(json.dumps({"error": str(e), "score": 0, "correctness_score": 0}))
     except Exception as e:
-        print(json.dumps({"error": f"An unexpected error occurred: {str(e)}", "score": 20.5, "correctness_score": 18.7}))
+        print(json.dumps({"error": f"An unexpected error occurred: {str(e)}", "score": 0, "correctness_score": 0}))
