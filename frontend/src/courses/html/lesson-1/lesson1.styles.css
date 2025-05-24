@@ -161,6 +161,23 @@
   overflow: hidden;
 }
 
+.global-error-marker {
+  position: absolute;
+  right: 15px;
+  top: 20px;
+  background-color: white;
+  border-radius: 4px;
+  border: 3px solid #2c3e50;
+  box-shadow: 4px 4px 1px #2c3e50;
+  padding: 10px;
+  transform: translateX(120%);
+  transition: 1s ease-in-out;
+}
+
+.show-error-marker {
+  transform: translateX(0);
+}
+
 .space-center-area {
   margin-top: 60px;
   width: 100%;

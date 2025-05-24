@@ -1,15 +1,18 @@
 import dns.resolver
 import pymongo
-import requests
 import os
 from dotenv import load_dotenv
-dns.resolver.default_resolver=dns.resolver.Resolver(configure=False)
-dns.resolver.default_resolver.nameservers=['8.8.8.8'] 
+
+import torch
+from transformers import AutoTokenizer, AutoModel
+import torch.nn.functional as F
+
+dns.resolver.default_resolver = dns.resolver.Resolver(configure=False)
+dns.resolver.default_resolver.nameservers = ['8.8.8.8']
 
 load_dotenv(dotenv_path='.env')
-hf_token = os.getenv("MODEL_ACCESS_TOKEN")
-uri = os.getenv("MONGO_DB_URI",)
-embedding_url = os.getenv("EMBEDDING_URL")
+
+uri = os.getenv("MONGO_DB_URI")
 if uri is None:
     raise ValueError("MONGO_DB_URI not found in environment variables.")
 
@@ -17,38 +20,46 @@ client = pymongo.MongoClient(uri)
 db = client.test
 collection = db.recommendations
 
-#function for generate vector space matching for a given text
+tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+model = AutoModel.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+
+
 def generateRecommendationVectorSpace(text: str) -> list[float]:
-    response = requests.post(
-        embedding_url, 
-        headers={"Authorization": f"Bearer {hf_token}"},
-        json={"inputs": text}
-    )
+    encoded_input = tokenizer(text, padding=True, truncation=True, return_tensors='pt')
+    with torch.no_grad():
+        model_output = model(**encoded_input)
 
-    if(response.status_code != 200):
-        raise ValueError(f"Request failed with the code of {response.status_code}: {response.text}")
-    
-    return response.json()
+    token_embeddings = model_output.last_hidden_state  
+    attention_mask = encoded_input['attention_mask'].unsqueeze(-1) 
+    masked_embeddings = token_embeddings * attention_mask
 
-# add a new field for our recommendation metadata with description vector embeddings
+    sum_embeddings = masked_embeddings.sum(dim=1)
+    sum_mask = attention_mask.sum(dim=1)
+    mean_pooled = sum_embeddings / sum_mask.clamp(min=1e-9)
+
+    embedding_vector = mean_pooled[0].cpu().tolist()
+    return embedding_vector
+
 def populateRecommendationDescriptions():
     for doc in collection.find({'description': {"$exists": True}}).limit(50):
         doc['description_vector'] = generateRecommendationVectorSpace(doc['description'])
         collection.replace_one({'_id': doc['_id']}, doc)
     return "Embeddings Field Populated"
 
-
-# generate recommendations suitable for user performance and send it to the user
 def generateRecommendations(query):
+    query_vector = generateRecommendationVectorSpace(query)
     results = collection.aggregate([
-    {"$vectorSearch": {
-        "queryVector": generateRecommendationVectorSpace(query),
-        "path": "description_vector",
-        "numCandidates": 100,
-        "limit": 1,
-        "index": "RecommendationsDescriptionRAG",
-        }}
+        {
+            "$vectorSearch": {
+                "queryVector": query_vector,
+                "path": "description_vector",
+                "numCandidates": 100,
+                "limit": 1,
+                "index": "RecommendationsDescriptionRAG",
+            }
+        }
     ])
+
     results_list = []
     for doc in results:
         doc['_id'] = str(doc['_id'])

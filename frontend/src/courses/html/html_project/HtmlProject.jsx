@@ -139,7 +139,7 @@ function HtmlProject() {
     const hasSkill2 = /<li[^>]*>\s*Effective\s*Communication\s*<\/li>/i.test(
       htmlContent
     );
-    const hasSkill3 = /<li[^>]*>\s*Good\s*with\s*Teamwork\s*<\/li>/i.test(
+    const hasSkill3 = /<li[^>]*>\s*Good\s*with\s*teamwork\s*<\/li>/i.test(
       htmlContent
     );
 
@@ -338,7 +338,7 @@ function HtmlProject() {
       const expectedSkills = [
         "Adaptability",
         "Effective Communication",
-        "Good with Teamwork",
+        "Good with teamwork",
       ];
       const skillsMatched = expectedSkills.every((skill) =>
         expItems.includes(skill)
@@ -397,6 +397,12 @@ function HtmlProject() {
 
   useEffect(() => {
     validateHTML(htmlInput);
+    const errorBanner = document.querySelector(".global-error-marker");
+    if (globalErrorState) {
+      errorBanner.classList.add("show-error-marker");
+    } else {
+      errorBanner.classList.remove("show-error-marker");
+    }
   }, [htmlInput]);
 
   useEffect(() => {
@@ -577,6 +583,10 @@ function HtmlProject() {
           className="playground-area"
           style={{ backgroundImage: `url(${GalacticBackground})` }}
         >
+          <div className="global-error-marker">
+            Major syntax issue found! Please check your code!
+          </div>
+
           <div className="space-center-area">
             <div className={`motivater ${hint === "" ? "fade" : ""}`}>
               <img
@@ -650,7 +660,7 @@ function HtmlProject() {
                     <ul>
                       {showSkill1 && <li>Adaptability</li>}
                       {showSkill2 && <li>Effective Communication</li>}
-                      {showSkill3 && <li>Good with Teamwork</li>}
+                      {showSkill3 && <li>Good with teamwork</li>}
                     </ul>
                   </div>
                 </div>
