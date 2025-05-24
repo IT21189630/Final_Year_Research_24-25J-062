@@ -11,7 +11,7 @@ const CollapsibleEditor = ({
     options, 
     isExpanded, 
     onToggle, 
-    height 
+    height
   }) => {
     return (
       <div className="editor-container" style={{ height: `${height}px` }}>
@@ -29,6 +29,7 @@ const CollapsibleEditor = ({
             value={value}
             onChange={onChange}
             options={options}
+            theme="vs-light"
           />
         </div>
       </div>

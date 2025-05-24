@@ -8,6 +8,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Provider } from "react-redux";
 import { persistor, store } from "./app/store";
 import { PersistGate } from "redux-persist/integration/react";
+import 'monaco-editor/min/vs/editor/editor.main.css';
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
