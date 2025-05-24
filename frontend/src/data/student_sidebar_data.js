@@ -36,7 +36,7 @@ const studentSidebarData = [
 	{
 		text: "Javascript Courses",
 		icon: <AiFillCode />,
-		link: "/js/lesson1",
+		link: "/student/dashboard/js-courses",
 	},
 
 	{

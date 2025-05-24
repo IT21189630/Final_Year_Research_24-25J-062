@@ -35,6 +35,7 @@ import Lesson27 from "./courses/css/lesson-27/Lesson27";
 import CourseDisplayer from "./pages/pages-student/available-courses/CourseDisplayer";
 import MyEnrollments from "./pages/pages-student/enrolled-courses/MyEnrollments";
 import LevelDisplayer from "./pages/pages-student/level-displayer/LevelDisplayer";
+import JsLevelDisplayer from "./pages/pages-student/js-level-displayer/JsLevelDisplayer";
 import SupportLessonsDisplayer from "./pages/pages-student/support-lessons/SupportLessonsDisplayer";
 import MainScreenStudent from "./pages/pages-student/main-screen/MainScreenStudent";
 import Leaderboard from "./pages/pages-student/leaderboard/Leaderboard";
@@ -98,6 +99,10 @@ function App() {
 						<Route
 							path="/student/dashboard/course/levels/:id"
 							element={<LevelDisplayer />}
+						/>
+						<Route
+							path="/student/dashboard/js-courses"
+							element={<JsLevelDisplayer />}
 						/>
 						<Route
 							path="/student/dashboard/course/support_lessons"
