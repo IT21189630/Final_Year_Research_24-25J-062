@@ -50,6 +50,9 @@ import CoinsPage from "./pages/pages-student/coins/CoinsPage";
 // js lesson page imports
 import JavaScriptLesson1 from "./courses/javascript/lesson-1/JSLesson1";
 import JavaScriptLesson2 from "./courses/javascript/lesson-2/JSLesson2";
+import JSLesson3 from "./courses/javascript/lesson-3/JSLesson3";
+import JSLesson4 from "./courses/javascript/lesson-4/JSLesson4";
+import JSLesson5 from "./courses/javascript/lesson-5/JSLesson5";
 
 function App() {
 	return (
@@ -151,6 +154,9 @@ function App() {
 
 				<Route path="/js/lesson1" element={<JavaScriptLesson1 />} />
 				<Route path="/js/lesson2" element={<JavaScriptLesson2 />} />
+				<Route path="/js/lesson3" element={<JSLesson3 />} />
+				<Route path="/js/lesson4" element={<JSLesson4 />} />
+				<Route path="/js/lesson5" element={<JSLesson5 />} />
 			</Routes>
 		</div>
 	);
