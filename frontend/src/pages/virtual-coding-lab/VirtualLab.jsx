@@ -38,7 +38,7 @@ const validateJsWithJSHint = (code) => {
   });
   return JSHINT.errors
     .filter(e => e)
-    .map(e => `${e.reason} (line ${e.line})`);
+    .map(e => `${e.reason}`);
 };
 
 
@@ -812,90 +812,52 @@ if (dataLine) {
   }
 };
 
-// const getPredictedErrors = async () => {
-//   if (errorTypes.length === 0) {
-//     console.error("Error Types array is empty. Cannot send prediction request.");
-//     return;
-//   }
 
-//   try {
-//     // Format the data according to the Gradio API's expected format
-//     // For Gradio API, we need to send an array where the first element is our input
-//     console.log("Sending error types:", errorTypes);
-    
-//     const predictResponse = await axios.post(
-//       "https://maleesha27233-research-lstm-network.hf.space/gradio_api/call/predict_next_error", // Changed to /api/predict
-//       {
-//         data: [JSON.stringify(errorTypes)] // Send as a JSON string
-//       },
-//       {
-//         headers: {
-//           'Content-Type': 'application/json'
-//         }
-//       }
-//     );
 
-//     console.log("Full prediction response:", predictResponse);
+// Add this function inside your VirtualLab component
 
-//     if (predictResponse.status === 200) {
-//       // Gradio API usually returns data.data for the actual output
-//       const result = predictResponse.data.data;
-      
-//       console.log("Raw prediction result:", result);
-      
-//       // Parse the result based on the structure we expect from the updated backend
-//       let predictedErrors;
-      
-//       if (typeof result === 'string') {
-//         // If it's a string (JSON), parse it
-//         try {
-//           const parsed = JSON.parse(result);
-//           predictedErrors = parsed.predictions || [];
-//         } catch (e) {
-//           console.error("Error parsing prediction result:", e);
-//           predictedErrors = [];
-//         }
-//       } else if (result && result.predictions) {
-//         // If it's already an object with predictions
-//         predictedErrors = result.predictions;
-//       } else {
-//         console.error("Unexpected result format:", result);
-//         predictedErrors = [];
-//       }
-      
-//       console.log("Processed Predicted Errors:", predictedErrors);
+const getHtmlErrorsFromApi = async () => {
+  try {
+    // Step 1: Send HTML code to the Hugging Face Gradio API
+    const predictResponse = await axios.post(
+      "https://maleesha6632-codeber-model.hf.space/gradio_api/call/predict",
+      { data: [htmlCode] },
+      { headers: { "Content-Type": "application/json" } }
+    );
 
-//       // Step 2: Send predictedErrors to the OpenAI /recommendation endpoint
-//       try {
-//         const recommendationResponse = await axios.post("http://localhost:4010/code/recommendation", {
-//           predictedErrors, // Send predicted errors to OpenAI route
-//         });
+    const eventId = predictResponse.data.event_id;
+    if (!eventId) {
+      console.error("No event_id returned from prediction API.");
+      return;
+    }
 
-//         if (recommendationResponse.status === 200) {
-//           const recommendation = recommendationResponse.data.recommendation;
-//           console.log("Recommendation:", recommendation);
+    // Step 2: Poll for the result
+    const pollResponse = await axios.get(
+      `https://maleesha6632-codeber-model.hf.space/gradio_api/call/predict/${eventId}`
+    );
 
-//           // Set the recommendation text and show the pop-up
-//           setRecommendationText(recommendation);
-//           setShowRecommendationPopup(true);
-//         } else {
-//           console.error("Failed to get recommendations. Status:", recommendationResponse.status);
-//         }
-//       } catch (recError) {
-//         console.error("Error during recommendation:", recError.response?.data || recError.message);
-//         // Still show what we got from predictions even if recommendation fails
-//         setRecommendationText(`Could not get recommendation, but predicted errors are: ${JSON.stringify(predictedErrors)}`);
-//         setShowRecommendationPopup(true);
-//       }
-//     } else {
-//       console.error("Failed to get predictions. Status:", predictResponse.status);
-//     }
-//   } catch (error) {
-//     console.error("Error during prediction:", error);
-//     console.error("Error details:", error.response?.data || error.message);
-//     alert("Failed to get error predictions. Check console for details.");
-//   }
-// };
+    // This gives you the raw string, like: "event: complete\ndata: [{...}]"
+    const rawResponse = pollResponse.data;
+    console.log("Raw HTML Error Response:", rawResponse);
+
+    // Extract the 'data: ...' line
+    const dataLine = rawResponse.split("\n").find(line => line.startsWith("data:"));
+
+    let htmlErrors = [];
+    if (dataLine) {
+      const jsonString = dataLine.replace("data: ", "");
+      const dataArr = JSON.parse(jsonString);
+      // The structure of dataArr depends on your model's output
+      // For example, if it's an array of error strings:
+      htmlErrors = dataArr[0]?.predictions || [];
+    }
+
+    console.log("HTML Errors Array:", htmlErrors);
+  } catch (error) {
+    console.error("Error fetching HTML errors:", error);
+  }
+};
+
 
 console.log("Error Types Array:", errorTypes);
 console.log("Is Array:", Array.isArray(errorTypes));
@@ -994,81 +956,7 @@ console.log("All Strings:", errorTypes.every((item) => typeof item === "string")
           setExpandedState={handleExpandedState}
           editorHeights={editorHeights}
         />
-        {/* <div className="html-css-code-blocks">
-          <div className="editor-container">
-            <span className='editor-title'>HTML</span>
-            <MonacoEditor
-              height="150px"
-              width="400px"
-              language="html"
-              value={htmlCode}
-              onChange={(newValue) => handleEditorChange(newValue, 'html')}
-              options={editorOptions}
-            />
-          </div>
-          <div className="editor-container">
-          <span className='editor-title'>CSS</span>
-            <MonacoEditor
-              height="150px"
-              width="400px"
-              language="css"
-              value={cssCode}
-              onChange={(newValue) => handleEditorChange(newValue, 'css')}
-              options={editorOptions}
-            />
-          </div>
-          <div className="editor-container">
-          <span className='editor-title'>JavaScript</span>
-            <MonacoEditor
-              height="150px"
-              width="400px"
-              language="javascript"
-              value={jsCode}
-              onChange={(newValue) => handleEditorChange(newValue, 'javascript')}
-              options={editorOptions}
-            />
-          </div>
-        </div> */}
-
-        {/* <div className="snippet-actions">
-          <button onClick={() => setShowPrompt(true)} className="save-button">
-            {currentSnippetId ? 'Update Snippet' : 'Save to Server'}
-          </button>
-          <button onClick={createNewSnippet} className="new-snippet-button">
-            New Snippet
-          </button>
-          <button onClick={validateHtml} className="validate-button">
-            Validate HTML
-          </button>
-          <button onClick={validateJs} className="validate-button">
-            Analyze JavaScript
-          </button>
-          {currentSnippetId && (
-            <button 
-              onClick={() => setShowCollaboratorInput(!showCollaboratorInput)}
-              className="collaborator-button"
-            >
-              {showCollaboratorInput ? 'Cancel' : 'Add Collaborator'}
-            </button>
-          )}
-          {showCollaboratorInput && currentSnippetId && (
-            <div className="collaborator-input">
-              <input
-                type="email"
-                placeholder="Enter collaborator's email"
-                value={collaboratorEmail}
-                onChange={(e) => setCollaboratorEmail(e.target.value)}
-                className="email-input"
-              />
-              <button 
-                onClick={handleAddCollaborator}
-                className="confirm-collaborator-button"
-              >
-                Add
-              </button>
-            </div>
-          )}
-        </div> */}
+       
 
       {showPrompt && (
   <div className="save-prompt-overlay">
@@ -1144,8 +1032,15 @@ console.log("All Strings:", errorTypes.every((item) => typeof item === "string")
   }}
   className="validate-button"
 >
-  Validate HTML
+  Check HTML
 </button>
+<button
+    onClick={getHtmlErrorsFromApi}
+    className="validate-button-hrml-2"
+    style={{ marginRight: 8 }}
+  >
+    Check HTML
+  </button>
           {/* <button onClick={validateJs} className="validate-button">
             Analyze JavaScript
           </button> */}
@@ -1165,8 +1060,9 @@ console.log("All Strings:", errorTypes.every((item) => typeof item === "string")
   }}
   className="validate-button"
 >
-  JSHint Check
+  Check JS
 </button>
+
 <button onClick={getPredictedErrors} className="recommandation-button" title="Get Recommendations">
   <MdLightbulbOutline size={20} style={{ verticalAlign: 'middle', marginRight: 4 }} />
   Recommendations
@@ -1193,6 +1089,7 @@ console.log("All Strings:", errorTypes.every((item) => typeof item === "string")
               >
                 Add
               </button>
+              
               
             </div>
           )}

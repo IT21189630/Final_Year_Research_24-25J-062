@@ -737,3 +737,7 @@ ul {
   box-shadow: 0 2px 6px rgba(39, 76, 146, 0.10);
   transform: translateY(0) scale(0.98);
 }
+
+.validate-button-hrml-2{
+  display: none
+}
