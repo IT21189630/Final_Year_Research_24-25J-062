@@ -14,7 +14,7 @@ import threading
 import time
 
 class JavaScriptEvaluator:
-    """Optimized JavaScript code evaluator with caching and early exit strategies."""
+    """Optimized JavaScript code evaluator with caching and comprehensive quality analysis."""
     
     def __init__(self, model_name="microsoft/codebert-base"):
         """Initialize with the specified model."""
@@ -111,7 +111,7 @@ class JavaScriptEvaluator:
         ratio = matcher.ratio()
         
         # If very high similarity, return early
-        if ratio > 0.95:
+        if ratio >= 0.995:
             return True, ratio
             
         return False, ratio
@@ -127,7 +127,6 @@ class JavaScriptEvaluator:
         # OPTIMIZATION 1: Check for exact/near-exact match first
         is_exact_match, quick_ratio = self.quick_exact_match_check(js_code, correct_solution)
         if is_exact_match:
-            # score = min(1.0, 0.95 + (quick_ratio * 0.04))  # 95-99% for exact matches
             score = min(1.0, quick_ratio)
             return score, ["Your solution matches the expected implementation perfectly!"]
         
@@ -215,7 +214,20 @@ class JavaScriptEvaluator:
         )
         
         # Ensure minimum score
-        correctness_score = max(0.05, min(0.99, correctness_score))
+        correctness_score = max(0.05, min(1.0, correctness_score))
+
+        if correctness_score < 0.45:
+            correctness_score = correctness_score
+        elif correctness_score < 0.65:
+            correctness_score = correctness_score + 0.32
+        elif correctness_score < 0.80:
+            correctness_score = correctness_score + 0.17
+        elif correctness_score < 0.90:
+            correctness_score = correctness_score + 0.07
+        elif correctness_score < 0.95:
+            correctness_score = correctness_score + 0.02
+        else:
+            correctness_score = correctness_score
         
         # Generate feedback
         if correctness_score > 0.90:
@@ -228,13 +240,14 @@ class JavaScriptEvaluator:
             correctness_feedback.append("Your solution has the right approach but differs from the expected implementation.")
         else:
             correctness_feedback.append("Your solution differs significantly from the expected implementation.")
+            
         
         # Add specific feedback only if needed
-        if function_similarity < 0.7 and len(solution_functions) > 0:
+        if function_similarity < 0.5 and len(solution_functions) > 0:
             correctness_feedback.append("Consider reviewing your function structure.")
         
-        if method_similarity < 0.7 and len(solution_method_calls) > 0:
-            correctness_feedback.append("You might be using different methods than expected.")
+        # if method_similarity < 0.5 and len(solution_method_calls) > 0:
+        #     correctness_feedback.append("You might be using different methods than expected.")
         
         return correctness_score, correctness_feedback
 
@@ -268,20 +281,20 @@ class JavaScriptEvaluator:
             
             # Calculate complexity score
             complexity_factor = (counts['function'] + counts['loop'] + counts['conditional']) / len(non_empty_lines)
-            metrics["complexity"] = max(0.1, 1.0 - min(complexity_factor * 2, 0.9))
+            metrics["complexity"] = max(0.1, 1.0 - min(complexity_factor, 0.9))
             
             # Readability score
             comment_lines = sum(1 for line in lines if line.strip().startswith('//'))
             comment_ratio = comment_lines / len(non_empty_lines)
-            metrics["readability"] = min(0.95, 0.5 + (comment_ratio * 2))
+            metrics["readability"] = min(0.99, 0.8 + (comment_ratio))
             
             # Maintainability score
             error_handling = counts['try'] > 0 and counts['catch'] > 0
             modular_functions = counts['function'] > 0
             
-            metrics["maintainability"] = min(0.95, 0.3 + 
-                                          (0.25 if error_handling else 0) + 
-                                          (0.2 if modular_functions else 0) + 
+            metrics["maintainability"] = min(0.99, 0.3 + 
+                                          (0.40 if error_handling else 0) + 
+                                          (0.05 if modular_functions else 0) + 
                                           (min(0.25, counts['variable'] * 0.05)))
             
             return metrics
@@ -338,7 +351,7 @@ class JavaScriptEvaluator:
         add_listener_count = len(re.findall(r'addEventListener\s*\(', js_code))
         remove_listener_count = len(re.findall(r'removeEventListener\s*\(', js_code))
         
-        if add_listener_count > remove_listener_count + 1:
+        if add_listener_count >= 1 and remove_listener_count < 1:
             issues.append(f"Memory Leak Risk: Found {add_listener_count} addEventListener calls but only {remove_listener_count} removeEventListener calls. Remove event listeners when they're no longer needed.")
         
         # Performance issues
@@ -365,19 +378,19 @@ class JavaScriptEvaluator:
         lines_with_semicolon = len(re.findall(r';\s*$', js_code, re.MULTILINE))
         total_statements = len(re.findall(r'(let|const|var|return|break|continue|throw)\s+[^;]+$', js_code, re.MULTILINE))
         
-        if total_statements > 5 and lines_with_semicolon > 0 and lines_with_semicolon < total_statements * 0.8:
-            issues.append("Code Style: Inconsistent use of semicolons. Either use them consistently or omit them entirely.")
+        # if total_statements > 5 and lines_with_semicolon > 0 and lines_with_semicolon < total_statements * 0.8:
+        #     issues.append("Code Style: Inconsistent use of semicolons. Either use them consistently or omit them entirely.")
         
         # Check for console.log in production code
-        console_count = len(re.findall(r'console\.(log|error|warn|info)', js_code))
-        if console_count > 3:
-            issues.append(f"Production Ready: Found {console_count} console statements. Remove or replace with proper logging for production code.")
+        # console_count = len(re.findall(r'console\.(log|error|warn|info)', js_code))
+        # if console_count > 3:
+        #     issues.append(f"Production Ready: Found {console_count} console statements. Remove or replace with proper logging for production code.")
         
         # Sort issues by priority (security > errors > performance > style)
         return issues  # Return all issues, not limited
 
     def evaluate_javascript(self, js_code, challenge_title="", challenge_description="", correct_solution=""):
-        """Optimized evaluation with early exits."""
+        """Comprehensive evaluation - ALWAYS analyzes code quality regardless of correctness."""
         start_time = time.time()
         
         results = {
@@ -399,29 +412,22 @@ class JavaScriptEvaluator:
             results["feedback"] = f"Syntax Error: {syntax_error}"
             return results
         
-        # 2. Run correctness check first if solution exists
+        # 2. Run correctness check if solution exists
         has_solution = correct_solution and correct_solution.strip() and not correct_solution.strip().startswith("//")
         
         if has_solution:
             correctness_score, correctness_feedback = self.compare_code_correctness(js_code, correct_solution)
             results["correctness_score"] = correctness_score
             results["correctness_feedback"] = correctness_feedback
-            
-            # Early exit for perfect matches
-            if correctness_score > 0.95:
-                results["score"] = correctness_score
-                results["metrics"] = {"complexity": 0.9, "readability": 0.9, "maintainability": 0.9}
-                results["issues"] = []
-                results["feedback"] = "\n".join(correctness_feedback)
-                print(f"Evaluation completed in {time.time() - start_time:.2f}s", file=sys.stderr)
-                return results
         else:
             correctness_score = 0.33
             correctness_feedback = ["No reference solution available for comparison."]
             results["correctness_score"] = correctness_score
             results["correctness_feedback"] = correctness_feedback
         
-        # 3. Analyze code quality (only if not perfect match)
+        # 3. ALWAYS analyze code quality - REMOVED EARLY EXIT
+        print(f"Analyzing code quality for correctness score: {correctness_score:.2f}", file=sys.stderr)
+        
         metrics = self.analyze_code_metrics(js_code)
         results["metrics"] = metrics
         
@@ -433,13 +439,13 @@ class JavaScriptEvaluator:
         issue_penalty = min(0.3, len(issues) * 0.05)
         
         if has_solution:
-            final_score = (0.80 * correctness_score + 0.20 * max(0, code_quality_score - issue_penalty))
+            final_score = (0.50 * correctness_score + 0.50 * max(0, code_quality_score - issue_penalty))
         else:
             final_score = max(0, code_quality_score - issue_penalty)
         
-        results["score"] = max(0.05, min(0.99, final_score))
+        results["score"] = max(0.05, min(1.0, final_score))
         
-        # 5. Generate feedback
+        # 5. Generate comprehensive feedback
         feedback = []
         
         # Overall score feedback
@@ -457,18 +463,21 @@ class JavaScriptEvaluator:
             feedback.append("\n**Correctness Analysis:**")
             feedback.extend(correctness_feedback)
         
+        # Always include metrics - even for perfect correctness
+        feedback.append("\n**Code Quality Metrics:**")
+        feedback.append(f"- Readability Score: {metrics['readability']:.1%}")
+        feedback.append(f"- Maintainability Score: {metrics['maintainability']:.1%}")  
+        feedback.append(f"- Complexity Score: {metrics['complexity']:.1%}")
+        
         # Add specific metric feedback if there are issues
-        if metrics["readability"] < 0.6 or metrics["maintainability"] < 0.6 or metrics["complexity"] < 0.6:
-            feedback.append("\n**Code Metrics:**")
-            
-            if metrics["readability"] < 0.6:
-                feedback.append(f"- Readability Score: {metrics['readability']:.1%} - Add more comments and improve code structure")
-            
-            if metrics["maintainability"] < 0.6:
-                feedback.append(f"- Maintainability Score: {metrics['maintainability']:.1%} - Add error handling and modularize your code")
-            
-            if metrics["complexity"] < 0.6:
-                feedback.append(f"- Complexity Score: {metrics['complexity']:.1%} - Consider breaking down complex functions")
+        if metrics["readability"] < 0.8:
+            feedback.append("  → Consider adding more comments and improving code structure")
+        
+        if metrics["maintainability"] < 0.8:
+            feedback.append("  → Consider adding error handling and modularizing your code")
+        
+        if metrics["complexity"] < 0.8:
+            feedback.append("  → Consider breaking down complex functions")
         
         # Add all code quality issues with proper formatting
         if issues:
@@ -506,23 +515,33 @@ class JavaScriptEvaluator:
                 feedback.append("\n✨ **Style & Convention Issues:**")
                 for issue in style_issues:
                     feedback.append(f"   • {issue}")
+        else:
+            # Even with no issues, acknowledge good practices
+            feedback.append("\n✅ **No Code Quality Issues Found!**")
+            feedback.append("Your code follows JavaScript best practices.")
         
         # Add suggestions for improvement
-        if final_score < 0.85 and (issues or metrics["readability"] < 0.7):
-            feedback.append("\n**Suggestions for Improvement:**")
+        if final_score < 0.95:  # Changed threshold since we want suggestions even for high-scoring code
+            feedback.append("\n**Suggestions for Further Improvement:**")
             
             suggestions = []
             if any("Security Risk:" in issue for issue in issues):
                 suggestions.append("1. Address security vulnerabilities immediately")
             
-            if metrics["readability"] < 0.7:
-                suggestions.append(f"{len(suggestions)+1}. Add meaningful comments to explain complex logic")
+            if metrics["readability"] < 0.9:  # Higher threshold for perfect code
+                suggestions.append(f"{len(suggestions)+1}. Add more meaningful comments to explain complex logic")
             
-            if not has_solution or correctness_score < 0.7:
-                suggestions.append(f"{len(suggestions)+1}. Review the problem requirements and ensure your solution addresses all aspects")
+            if metrics["maintainability"] < 0.7:
+                suggestions.append(f"{len(suggestions)+1}. Consider adding more error handling and breaking code into smaller functions")
+            
+            if not has_solution or correctness_score < 0.95:
+                suggestions.append(f"{len(suggestions)+1}. Review the problem requirements to ensure complete coverage")
             
             if any("var " in issue for issue in issues):
                 suggestions.append(f"{len(suggestions)+1}. Modernize your code by using 'const' and 'let' instead of 'var'")
+            
+            if not suggestions:
+                suggestions.append("1. Excellent work! Consider adding more inline documentation for future maintainers")
             
             feedback.extend(suggestions)
         

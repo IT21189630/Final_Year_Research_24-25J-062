@@ -43,6 +43,11 @@ const studentSidebarData = [
 		icon: <SiScilab />,
 		link: "/student/dashboard/virtuallab",
 	},
+		{
+		text: "Daily Challenge",
+		icon: <SiScilab />,
+		link: "/student/dashboard/today-challenge",
+	},
 ];
 
 export default studentSidebarData;

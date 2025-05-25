@@ -11,9 +11,9 @@ const AttemptChallenge = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  const [htmlCode, setHtmlCode] = useState('<div id="challenge-solution">\n  <!-- Your HTML here -->\n</div>');
-  const [cssCode, setCssCode] = useState('#challenge-solution {\n  /* Your CSS here */\n}');
-  const [jsCode, setJsCode] = useState('// Your JavaScript here\n');
+  const [htmlCode, setHtmlCode] = useState('');
+  const [cssCode, setCssCode] = useState('');
+  const [jsCode, setJsCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   
@@ -554,7 +554,7 @@ const AttemptChallenge = () => {
                 />
               </div>
               
-              <div className="editor-container js-editor-container">
+              <div className="editor-container js-editor-container2">
                 <div className="editor-header">
                   <h3>JavaScript</h3>
                 </div>

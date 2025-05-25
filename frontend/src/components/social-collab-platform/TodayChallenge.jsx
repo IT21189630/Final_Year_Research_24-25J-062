@@ -105,7 +105,7 @@ const TodayChallenge = () => {
         </div>
         
         <div className="challenge-actions">
-          <Link to={`/attempt/${challenge._id}`} className="attempt-button">
+          <Link to={`/student/dashboard/attempt/${challenge._id}`} className="attempt-button">
             Attempt Challenge
           </Link>
         </div>
