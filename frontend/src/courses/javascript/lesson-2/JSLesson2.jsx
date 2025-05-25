@@ -5,7 +5,7 @@ import { javascript } from "@codemirror/lang-javascript";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import axiosInstanceGamification from "../../../axios/axiosInstanceGamification";
-import SpaceBackground from "../../../images/js-lessons/space-station-bg.png";
+import ShipControlPanel from "../../../images/js-lessons/ship-control-panel3.png";
 import AstronautGuide from "../../../images/js-lessons/js-motive-image.png";
 import Timer from "../../../components/timer/Timer";
 import { IoMdTimer } from "react-icons/io";
@@ -504,44 +504,238 @@ function JSLesson2() {
 					</div>
 				</div>
 
-				{/* Right side - Mission Control Display */}
-				<div
-					className="js-mission-control"
-					style={{ backgroundImage: `url(${SpaceBackground})` }}
-				>
-					<div className="js-control-panel">
-						<div
-							className={`js-astronaut-hint ${
-								hint === "" ? "fade" : ""
-							}`}
-						>
-							<img
-								className="js-astronaut-guide"
-								src={AstronautGuide}
-								alt="astronaut-guide"
-							/>
-							<p className="js-hint-text">{hint}</p>
+				{/* Right side - Advanced Spaceship Command Center */}
+				<div className="js-command-center">
+					{/* Background Elements */}
+					<div className="js-space-background">
+						<div className="js-stars-field">
+							{[...Array(20)].map((_, i) => (
+								<div
+									key={i}
+									className={`js-star star-${i}`}
+								></div>
+							))}
 						</div>
-						<div className="js-mission-parameter-topic">
-							Spacecraft Function Systems Status
+					</div>
+
+					{/* Main Control Interface */}
+					<div className="js-control-interface">
+						{/* Header */}
+						<div className="js-command-header">
+							<h2 className="js-command-title">
+								🚀 SPACESHIP COMMAND CENTER
+							</h2>
+							<div className="js-status-indicator">
+								<div className="js-power-light"></div>
+								<span>SYSTEM ACTIVE</span>
+							</div>
 						</div>
 
-						{/* Mission Control Display that updates based on correct functions */}
-						{startEngineVisible && (
-							<div className="js-mission-parameter">
-								🔥 Engine System: Online ✓
+						{/* Hint System */}
+						{hint && (
+							<div className="js-hint-system">
+								<div className="js-hint-container">
+									<div className="js-astronaut-avatar">
+										<img
+											src={AstronautGuide}
+											alt="Mission Commander"
+										/>
+									</div>
+									<div className="js-hint-message">
+										<div className="js-hint-header">
+											Mission Commander
+										</div>
+										<div className="js-hint-content">
+											{hint}
+										</div>
+									</div>
+								</div>
 							</div>
 						)}
-						{calculateSpeedVisible && (
-							<div className="js-mission-parameter">
-								⚡ Speed Calculator: Active ✓
+
+						{/* Main Spaceship Console */}
+						<div className="js-spaceship-console">
+							<div className="js-console-header">
+								<span>SPACECRAFT STATUS</span>
+								<div className="js-console-lights">
+									<div className="js-light red"></div>
+									<div className="js-light yellow"></div>
+									<div className="js-light green"></div>
+								</div>
 							</div>
-						)}
-						{navigationSystemVisible && (
-							<div className="js-mission-parameter">
-								🧭 Navigation System: Ready ✓
+
+							{/* Spaceship Visualization */}
+							<div className="js-ship-display">
+								<div className="js-ship-container">
+									{/* Main Ship Body */}
+									{/* <div className="js-main-ship">
+										<div className="js-ship-nose"></div>
+										<div className="js-ship-center">
+											<div className="js-cockpit">
+												<div className="js-cockpit-glass"></div>
+											</div>
+											<div className="js-ship-wings">
+												<div className="js-wing left"></div>
+												<div className="js-wing right"></div>
+											</div>
+										</div>
+										<div className="js-ship-tail"></div>
+									</div> */}
+
+									{/* Engine System */}
+									<div
+										className={`js-engine-module ${
+											startEngineVisible
+												? "active"
+												: "inactive"
+										}`}
+									>
+										<div className="js-engine-core">
+											<div className="js-engine-glow-inner"></div>
+											{startEngineVisible && (
+												<div className="js-engine-flames">
+													<div className="js-flame flame-1"></div>
+													<div className="js-flame flame-2"></div>
+													<div className="js-flame flame-3"></div>
+												</div>
+											)}
+										</div>
+										<div className="js-engine-label">
+											ENGINE
+										</div>
+									</div>
+
+									{/* Speed Calculator */}
+									<div
+										className={`js-speed-module ${
+											calculateSpeedVisible
+												? "active"
+												: "inactive"
+										}`}
+									>
+										<div className="js-speed-radar">
+											<div className="js-radar-sweep"></div>
+											<div className="js-radar-grid">
+												<div className="js-radar-line h-line-1"></div>
+												<div className="js-radar-line h-line-2"></div>
+												<div className="js-radar-line v-line-1"></div>
+												<div className="js-radar-line v-line-2"></div>
+											</div>
+											{calculateSpeedVisible && (
+												<div className="js-radar-blip"></div>
+											)}
+										</div>
+										<div className="js-speed-label">
+											SPEED CALC
+										</div>
+									</div>
+
+									{/* Navigation System */}
+									<div
+										className={`js-nav-module ${
+											navigationSystemVisible
+												? "active"
+												: "inactive"
+										}`}
+									>
+										<div className="js-nav-display">
+											<div className="js-nav-ring outer"></div>
+											<div className="js-nav-ring middle"></div>
+											<div className="js-nav-ring inner"></div>
+											<div className="js-nav-center">
+												<div className="js-nav-arrow"></div>
+												<div className="js-nav-compass-points">
+													<span className="north">
+														N
+													</span>
+													<span className="east">
+														E
+													</span>
+													<span className="south">
+														S
+													</span>
+													<span className="west">
+														W
+													</span>
+												</div>
+											</div>
+										</div>
+										<div className="js-nav-label">
+											NAVIGATION
+										</div>
+									</div>
+								</div>
 							</div>
-						)}
+						</div>
+
+						{/* System Status Panel */}
+						<div className="js-systems-panel">
+							<div className="js-panel-header">SYSTEM STATUS</div>
+							<div className="js-systems-grid">
+								<div
+									className={`js-system-module ${
+										startEngineVisible
+											? "online"
+											: "offline"
+									}`}
+								>
+									<div className="js-module-icon">🔥</div>
+									<div className="js-module-info">
+										<div className="js-module-name">
+											Engine Core
+										</div>
+										<div className="js-module-status">
+											{startEngineVisible
+												? "ONLINE"
+												: "STANDBY"}
+										</div>
+									</div>
+									<div className="js-module-indicator"></div>
+								</div>
+
+								<div
+									className={`js-system-module ${
+										calculateSpeedVisible
+											? "online"
+											: "offline"
+									}`}
+								>
+									<div className="js-module-icon">⚡</div>
+									<div className="js-module-info">
+										<div className="js-module-name">
+											Speed Calc
+										</div>
+										<div className="js-module-status">
+											{calculateSpeedVisible
+												? "ACTIVE"
+												: "INACTIVE"}
+										</div>
+									</div>
+									<div className="js-module-indicator"></div>
+								</div>
+
+								<div
+									className={`js-system-module ${
+										navigationSystemVisible
+											? "online"
+											: "offline"
+									}`}
+								>
+									<div className="js-module-icon">🧭</div>
+									<div className="js-module-info">
+										<div className="js-module-name">
+											Navigation
+										</div>
+										<div className="js-module-status">
+											{navigationSystemVisible
+												? "READY"
+												: "CALIBRATING"}
+										</div>
+									</div>
+									<div className="js-module-indicator"></div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
