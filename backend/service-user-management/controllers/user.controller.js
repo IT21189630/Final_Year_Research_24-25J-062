@@ -3,40 +3,33 @@ const adminModel = require("../models/admin.model");
 
 // Get user by ID
 const getUserById = async (req, res) => {
-	const { id } = req.params;
+  const { id } = req.params;
 
-	if (!id) {
-		return res.status(400).json({ error: "User ID is required" });
-	}
+  if (!id) {
+    return res.status(400).json({ error: "User ID is required" });
+  }
 
-	try {
-		// Try to find user in student model
-		let user = await studentModel
-			.findById(id)
-			.select("-password -refresh_token");
+  try {
+    // Try to find user in student model
+    let user = await studentModel
+      .findById(id)
+      .select("-password -refresh_token");
 
-		// If not found in student model, try admin model
-		if (!user) {
-			user = await adminModel
-				.findById(id)
-				.select("-password -refresh_token");
-		}
+    // If not found in student model, try admin model
+    if (!user) {
+      user = await adminModel.findById(id).select("-password -refresh_token");
+    }
 
-		if (!user) {
-			return res.status(404).json({ error: "User not found" });
-		}
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
 
-		return res.status(200).json(user);
-	} catch (error) {
-		console.error("Error fetching user:", error);
-		return res.status(500).json({ error: "Internal server error" });
-	}
+    return res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 };
-
-module.exports = { getUserById };
-const studentModel = require("../models/student.model");
-const adminModel = require("../models/admin.model");
-
 
 // Get user by email
 const getUserByEmail = async (req, res) => {
@@ -60,55 +53,63 @@ const getUserByEmail = async (req, res) => {
 };
 
 const addCollaboratedSnippet = async (req, res) => {
-    try {
-      const { userId } = req.params;
-      const { snippetId } = req.body;
-  
-      const user = await studentModel.findByIdAndUpdate(
+  try {
+    const { userId } = req.params;
+    const { snippetId } = req.body;
+
+    const user = await studentModel
+      .findByIdAndUpdate(
         userId,
         { $addToSet: { collaboratedSnippets: snippetId } }, // Prevent duplicates
         { new: true }
-      ).select('collaboratedSnippets');
-  
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      res.status(200).json(user);
-    } catch (error) {
-      console.error("Error updating collaborated snippets:", error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
-  };
+      )
+      .select("collaboratedSnippets");
 
-  const getCollaboratedSnippets = async (req, res) => {
-    try {
-      const userId = req.params.userId;
-      
-      // First check student model
-      let user = await studentModel.findById(userId)
-        .select('collaboratedSnippets')
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error updating collaborated snippets:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+const getCollaboratedSnippets = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // First check student model
+    let user = await studentModel
+      .findById(userId)
+      .select("collaboratedSnippets")
+      .lean();
+
+    // If not found in student model, check admin model
+    if (!user) {
+      user = await adminModel
+        .findById(userId)
+        .select("collaboratedSnippets")
         .lean();
-  
-      // If not found in student model, check admin model
-      if (!user) {
-        user = await adminModel.findById(userId)
-          .select('collaboratedSnippets')
-          .lean();
-      }
-  
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-      // Return empty array if no collaborated snippets exist
-      const snippets = user.collaboratedSnippets || [];
-      res.status(200).json(snippets);
-  
-    } catch (error) {
-      console.error("Error fetching collaborated snippets:", error);
-      res.status(500).json({ message: "Internal Server Error" });
     }
-  };
 
-module.exports = { getUserByEmail, addCollaboratedSnippet, getCollaboratedSnippets };
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return empty array if no collaborated snippets exist
+    const snippets = user.collaboratedSnippets || [];
+    res.status(200).json(snippets);
+  } catch (error) {
+    console.error("Error fetching collaborated snippets:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+module.exports = {
+  getUserByEmail,
+  addCollaboratedSnippet,
+  getCollaboratedSnippets,
+  getUserById,
+};

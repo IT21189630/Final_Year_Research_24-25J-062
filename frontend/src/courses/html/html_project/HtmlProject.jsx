@@ -19,6 +19,7 @@ import { toast } from "react-hot-toast";
 import { lessonPerformanceScoreCalculator } from "../../../components/performance-score-calc/PerformanceScoreCalculator";
 import "./html_project.styles.css";
 import PerformanceSummaryModal from "../../../components/performance-summary-modal/PerformanceSummaryModal";
+import HtmlCssErrorComponentEnhanced from "../../../pages/virtual-coding-lab/html_error_component_enhanced";
 
 function HtmlProject() {
   const dispatch = useDispatch();
@@ -72,8 +73,13 @@ function HtmlProject() {
   const [showSkill3, setShowSkill3] = useState(false);
   const [globalErrorState, setGlobalErrorState] = useState(false);
   const [currentHint, setCurrentHint] = useState("");
+  const [errorChecker, setErrorChecker] = useState(false);
 
   const editorRef = useRef();
+
+  const errorCheckerHandler = () => {
+    setErrorChecker((prvState) => !prvState);
+  };
 
   const useHintSystem = () => {
     if (hintCounter > 0) {
@@ -450,6 +456,13 @@ function HtmlProject() {
         </div>
       )}
 
+      {/* error checker modal */}
+      {errorChecker && (
+        <div className="error-checker-cont">
+          <HtmlCssErrorComponentEnhanced htmlCode={htmlInput} cssCode={""} />
+        </div>
+      )}
+
       <PerformanceSummaryModal
         visibility={showModal}
         score={performanceScore}
@@ -473,6 +486,14 @@ function HtmlProject() {
                 />
               </span>
             </div>
+
+            <div
+              className="error-checker-toggler"
+              onClick={() => errorCheckerHandler()}
+            >
+              Error Checker
+            </div>
+
             <div className="attempt-counter">
               <span className="timer-icon">
                 <FaStar />
