@@ -7,11 +7,23 @@ from torchvision.models import resnet50, ResNet50_Weights
 import torchvision.transforms as transforms
 from PIL import Image
 from scipy.spatial.distance import cosine
+import contextlib
+
+@contextlib.contextmanager
+def suppress_stdout():
+    import sys
+    old_stdout = sys.stdout
+    sys.stdout = sys.stderr
+    try:
+        yield
+    finally:
+        sys.stdout = old_stdout
 
 def extract_features(image_path):
     """Extract features from an image using ResNet-50."""
-    # Load ResNet model
-    model = resnet50(weights=ResNet50_Weights.DEFAULT)
+    # Load ResNet model with stdout suppressed to avoid download messages
+    with suppress_stdout():
+        model = resnet50(weights=ResNet50_Weights.DEFAULT)
     model.eval()
 
     # Image preprocessing
