@@ -38,6 +38,7 @@ import Lesson27 from "./courses/css/lesson-27/Lesson27";
 import CourseDisplayer from "./pages/pages-student/available-courses/CourseDisplayer";
 import MyEnrollments from "./pages/pages-student/enrolled-courses/MyEnrollments";
 import LevelDisplayer from "./pages/pages-student/level-displayer/LevelDisplayer";
+import JsLevelDisplayer from "./pages/pages-student/js-level-displayer/JsLevelDisplayer";
 import SupportLessonsDisplayer from "./pages/pages-student/support-lessons/SupportLessonsDisplayer";
 import MainScreenStudent from "./pages/pages-student/main-screen/MainScreenStudent";
 
@@ -60,6 +61,10 @@ import CreateDailyChallenge from './components/social-collab-platform/CreateDail
 import TodayChallenge from './components/social-collab-platform/TodayChallenge';
 import AttemptChallenge from './components/social-collab-platform/AttemptChallenge';
 
+import JavaScriptLesson2 from "./courses/javascript/lesson-2/JSLesson2";
+import JSLesson3 from "./courses/javascript/lesson-3/JSLesson3";
+import JSLesson4 from "./courses/javascript/lesson-4/JSLesson4";
+import JSLesson5 from "./courses/javascript/lesson-5/JSLesson5";
 
 function App() {
 	return (
@@ -122,6 +127,10 @@ function App() {
 						<Route
 							path="/student/dashboard/course/levels/:id"
 							element={<LevelDisplayer />}
+						/>
+						<Route
+							path="/student/dashboard/js-courses"
+							element={<JsLevelDisplayer />}
 						/>
 						<Route
 							path="/student/dashboard/course/support_lessons"
@@ -187,6 +196,10 @@ function App() {
 				<Route path="/lesson27" element={<Lesson27 />} />
 
 				<Route path="/js/lesson1" element={<JavaScriptLesson1 />} />
+				<Route path="/js/lesson2" element={<JavaScriptLesson2 />} />
+				<Route path="/js/lesson3" element={<JSLesson3 />} />
+				<Route path="/js/lesson4" element={<JSLesson4 />} />
+				<Route path="/js/lesson5" element={<JSLesson5 />} />
 			</Routes>
 		</div>
 	);
