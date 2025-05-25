@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const {
 	getUserWallet,
+	getUserInventory,
+	purchaseItem,
 	convertXpToCoins,
 	getConversionRates,
 	updateCurrency,
@@ -12,6 +14,12 @@ router.get("/wallet/conversion-rates", getConversionRates);
 
 // Get user wallet
 router.get("/wallet/:userId", getUserWallet);
+
+// Get user inventory
+router.get("/inventory/:userId", getUserInventory);
+
+// Purchase item from store
+router.post("/store/purchase", purchaseItem);
 
 // Convert XP to coins
 router.post("/wallet/convert", convertXpToCoins);

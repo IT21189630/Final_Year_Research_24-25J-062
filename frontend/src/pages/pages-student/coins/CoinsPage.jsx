@@ -28,6 +28,7 @@ function CoinsPage() {
 	const [selectedConversion, setSelectedConversion] = useState(null);
 	const [customXpAmount, setCustomXpAmount] = useState("");
 	const [convertingXp, setConvertingXp] = useState(false);
+	const [purchasingItemId, setPurchasingItemId] = useState(null);
 
 	// Fetch wallet data
 	const fetchWallet = async () => {
@@ -123,8 +124,8 @@ function CoinsPage() {
 		}
 	};
 
-	// Handle item purchase
-	const handlePurchase = (itemName, price, icon) => {
+	// Handle item purchase - Updated to track specific item being purchased
+	const handlePurchase = async (itemId, itemName, price, icon) => {
 		// Check if user has enough coins
 		if (wallet?.coinBalance < price) {
 			toast.error(
@@ -133,28 +134,31 @@ function CoinsPage() {
 			return;
 		}
 
-		// Simulate purchase
-		const newWallet = {
-			...wallet,
-			coinBalance: wallet.coinBalance - price,
-			transactions: [
+		try {
+			setPurchasingItemId(itemId);
+			const response = await axiosInstanceGamification.post(
+				"/gamified-learning/api/gamification/store/purchase",
 				{
-					type: "PURCHASE",
-					coinAmount: -price,
-					description: `Purchased ${itemName}`,
-					timestamp: new Date(),
-				},
-				...wallet.transactions,
-			],
-		};
+					userId: user_id,
+					itemId,
+				}
+			);
 
-		// Update wallet state
-		setWallet(newWallet);
-
-		// Show success toast
-		toast.success(`${itemName} purchased successfully!`, {
-			icon: icon,
-		});
+			if (response.data.success) {
+				toast.success(`${itemName} purchased successfully!`, {
+					icon: icon,
+				});
+				// Refresh wallet data to show updated balance and transactions
+				fetchWallet();
+			}
+		} catch (error) {
+			console.error("Error purchasing item:", error);
+			toast.error(
+				error.response?.data?.error || "Failed to purchase item!"
+			);
+		} finally {
+			setPurchasingItemId(null);
+		}
 	};
 
 	useEffect(() => {
@@ -283,8 +287,11 @@ function CoinsPage() {
 											{transaction.type ===
 											"CONVERT_XP" ? (
 												<FaExchangeAlt />
-											) : (
+											) : transaction.type ===
+											  "PURCHASE" ? (
 												<FaCoins />
+											) : (
+												<FaTrophy />
 											)}
 										</div>
 										<div className="transaction-details">
@@ -324,32 +331,36 @@ function CoinsPage() {
 					</p>
 
 					<div className="store-items">
+						{/* Updated: 5 Lesson Hints for 2 coins */}
 						<div className="store-item">
 							<div className="store-item-icon">
 								<FaLightbulb />
 							</div>
 							<div className="store-item-details">
-								<h3>20 Lesson Hints</h3>
-								<p>
-									Get unstuck with hints for difficult
-									challenges
-								</p>
+								<h3>5 JS Lesson Hints</h3>
+								<p>Get 5 extra hints for JavaScript lessons</p>
 							</div>
 							<div className="store-item-price">
 								<span>
-									1 <FaCoins className="coin-icon" />
+									2 <FaCoins className="coin-icon" />
 								</span>
 								<button
 									className="buy-button"
 									onClick={() =>
 										handlePurchase(
-											"20 Lesson Hints",
-											1,
+											"5_lesson_hints",
+											"5 JS Lesson Hints",
+											2,
 											"💡"
 										)
 									}
+									disabled={
+										purchasingItemId === "5_lesson_hints"
+									}
 								>
-									Buy
+									{purchasingItemId === "5_lesson_hints"
+										? "Buying..."
+										: "Buy"}
 								</button>
 							</div>
 						</div>
@@ -370,13 +381,19 @@ function CoinsPage() {
 									className="buy-button"
 									onClick={() =>
 										handlePurchase(
+											"advanced_tutorial",
 											"Advanced Tutorial",
 											5,
 											"📚"
 										)
 									}
+									disabled={
+										purchasingItemId === "advanced_tutorial"
+									}
 								>
-									Buy
+									{purchasingItemId === "advanced_tutorial"
+										? "Buying..."
+										: "Buy"}
 								</button>
 							</div>
 						</div>
@@ -397,13 +414,17 @@ function CoinsPage() {
 									className="buy-button"
 									onClick={() =>
 										handlePurchase(
+											"xp_booster",
 											"2× XP Booster (1 day)",
 											10,
 											"🚀"
 										)
 									}
+									disabled={purchasingItemId === "xp_booster"}
 								>
-									Buy
+									{purchasingItemId === "xp_booster"
+										? "Buying..."
+										: "Buy"}
 								</button>
 							</div>
 						</div>
@@ -423,10 +444,20 @@ function CoinsPage() {
 								<button
 									className="buy-button"
 									onClick={() =>
-										handlePurchase("Custom Theme", 15, "🎨")
+										handlePurchase(
+											"custom_theme",
+											"Custom Theme",
+											15,
+											"🎨"
+										)
+									}
+									disabled={
+										purchasingItemId === "custom_theme"
 									}
 								>
-									Buy
+									{purchasingItemId === "custom_theme"
+										? "Buying..."
+										: "Buy"}
 								</button>
 							</div>
 						</div>
@@ -450,13 +481,19 @@ function CoinsPage() {
 									className="buy-button"
 									onClick={() =>
 										handlePurchase(
+											"exclusive_avatar",
 											"Exclusive Avatar",
 											25,
 											"👑"
 										)
 									}
+									disabled={
+										purchasingItemId === "exclusive_avatar"
+									}
 								>
-									Buy
+									{purchasingItemId === "exclusive_avatar"
+										? "Buying..."
+										: "Buy"}
 								</button>
 							</div>
 						</div>
@@ -476,10 +513,20 @@ function CoinsPage() {
 								<button
 									className="buy-button"
 									onClick={() =>
-										handlePurchase("Mystery Box", 8, "🎁")
+										handlePurchase(
+											"mystery_box",
+											"Mystery Box",
+											8,
+											"🎁"
+										)
+									}
+									disabled={
+										purchasingItemId === "mystery_box"
 									}
 								>
-									Buy
+									{purchasingItemId === "mystery_box"
+										? "Buying..."
+										: "Buy"}
 								</button>
 							</div>
 						</div>

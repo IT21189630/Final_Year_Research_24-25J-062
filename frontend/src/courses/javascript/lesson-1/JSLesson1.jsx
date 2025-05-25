@@ -4,6 +4,7 @@ import { oneDark } from "@codemirror/theme-one-dark";
 import { javascript } from "@codemirror/lang-javascript";
 import { useSelector } from "react-redux";
 import axios from "axios";
+import axiosInstanceGamification from "../../../axios/axiosInstanceGamification";
 import SpaceBackground from "../../../images/js-lessons/space-station-bg.png";
 import AstronautGuide from "../../../images/js-lessons/js-motive-image.png";
 import Timer from "../../../components/timer/Timer";
@@ -22,12 +23,30 @@ function JSLesson1() {
 		"Remember to use 'let' to declare your variables.",
 		"Text values need quotation marks!",
 		"Numbers don't need quotes in JavaScript.",
+		"Variable names should be descriptive and meaningful.",
+		"Don't forget the semicolon at the end of each statement!",
+		"Check your spelling - JavaScript is case-sensitive.",
+		"Make sure your variable names don't have spaces.",
+		"Use camelCase for multi-word variable names like 'missionName'.",
+		"You can also use 'const' for values that won't change.",
+		"Single quotes ('') and double quotes (\"\") both work for strings.",
+		"Variable names cannot start with a number.",
+		"Avoid using JavaScript reserved words like 'function' or 'return'.",
+		"Use meaningful names: 'userName' is better than 'x'.",
+		"You can declare multiple variables on separate lines for clarity.",
+		"The equals sign (=) assigns values, not equality comparison.",
+		"JavaScript variables are loosely typed - no need to specify data type.",
+		"Try using console.log() to test your variables in the browser console.",
+		"Variable names are case-sensitive: 'name' and 'Name' are different.",
+		"Use descriptive names that explain what the variable stores.",
+		"Remember: let variableName = value; is the basic syntax pattern.",
 	];
 	const maximumMargins = { maxHints: 3, maxTime: 300, maxAttempts: 5 };
 
 	const [activate, setActivate] = useState(false);
 	const [jsInput, setJsInput] = useState(initialCode);
 	const [hintCounter, setHintCounter] = useState(3);
+	const [totalHints, setTotalHints] = useState(3);
 	const [attemptCounter, setAttemptCounter] = useState(5);
 	const [performanceScore, setPerformanceScore] = useState(0);
 	const [hint, setHint] = useState("");
@@ -40,21 +59,78 @@ function JSLesson1() {
 	const [loadingFeedback, setLoadingFeedback] = useState(false);
 	const [processingMission, setProcessingMission] = useState(false);
 	const [missionCompleted, setMissionCompleted] = useState(false);
+	const [inventoryLoading, setInventoryLoading] = useState(true);
 	const editorRef = useRef();
 
 	const API_BASE_URL =
 		"http://localhost:4003/gamified-learning/api/ai-integration";
 	const lessonId = "lesson01";
 
+	const fetchUserInventory = async () => {
+		try {
+			console.log("Fetching JS lesson inventory for user:", user_id);
+			const response = await axiosInstanceGamification.get(
+				`/gamified-learning/api/gamification/inventory/${user_id}`
+			);
+
+			console.log("JS Lesson Inventory Response:", response.data);
+
+			if (response.data.success) {
+				const purchasedHints =
+					response.data.inventory.jsLessonHints || 0;
+				const defaultHints = 3;
+				const totalAvailableHints = defaultHints + purchasedHints;
+
+				console.log(
+					`💡 JS Hints: Default: ${defaultHints}, Purchased: ${purchasedHints}, Total: ${totalAvailableHints}`
+				);
+
+				setTotalHints(totalAvailableHints);
+				setHintCounter(totalAvailableHints);
+
+				maximumMargins.maxHints = totalAvailableHints;
+
+				if (purchasedHints > 0) {
+					console.log(
+						`🎉 JS Lesson: Found ${purchasedHints} purchased hints!`
+					);
+					toast.success(
+						`🎯 You have ${totalAvailableHints} hints available for this mission!`
+					);
+				}
+			}
+		} catch (error) {
+			console.error("Error fetching JS lesson inventory:", error);
+			setTotalHints(3);
+			setHintCounter(3);
+		} finally {
+			setInventoryLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		if (user_id) {
+			fetchUserInventory();
+		} else {
+			setInventoryLoading(false);
+		}
+	}, [user_id]);
+
 	const useHintSystem = () => {
+		console.log(` Hint requested. Current: ${hintCounter}/${totalHints}`);
+
 		if (hintCounter > 0) {
 			setHintCounter((prev) => prev - 1);
 			setHint(hints.reverse()[hintCounter - 1]);
+			console.log(
+				`✅ Hint used! Remaining: ${hintCounter - 1}/${totalHints}`
+			);
 			setTimeout(() => {
 				setHint("");
 			}, hintDuration);
 		} else {
 			setHint("No more hints available, Space Cadet!");
+			console.log(" No hints remaining!");
 			setTimeout(() => {
 				setHint("");
 			}, hintDuration);
@@ -110,12 +186,21 @@ function JSLesson1() {
 		if (hasMissionName && hasAstronautName && hasMissionDay) {
 			setActivate(false);
 
-			// Calculate performance score
-			const score = lessonPerformanceScoreCalculator(maximumMargins, {
-				usedHints: hints.length - hintCounter,
-				consumedTime,
-				usedAttempts: 5 - attemptCounter,
-			});
+			// Calculate performance score with dynamic hints
+			const dynamicMaximumMargins = {
+				maxHints: totalHints,
+				maxTime: 300,
+				maxAttempts: 5,
+			};
+
+			const score = lessonPerformanceScoreCalculator(
+				dynamicMaximumMargins,
+				{
+					usedHints: totalHints - hintCounter,
+					consumedTime,
+					usedAttempts: 5 - attemptCounter,
+				}
+			);
 			setPerformanceScore(score);
 
 			// Get AI feedback
@@ -143,7 +228,7 @@ function JSLesson1() {
 		try {
 			setLoadingFeedback(true);
 			const performance = {
-				hintsUsed: hints.length - hintCounter,
+				hintsUsed: totalHints - hintCounter,
 				completionTime: consumedTime,
 				attempts: 5 - attemptCounter,
 				score: score,
@@ -184,7 +269,7 @@ function JSLesson1() {
 				code: jsInput,
 				score,
 				completionTime: consumedTime,
-				hintsUsed: hints.length - hintCounter,
+				hintsUsed: totalHints - hintCounter,
 				attempts: 5 - attemptCounter,
 			});
 		} catch (error) {
@@ -299,6 +384,54 @@ function JSLesson1() {
 						<h2 className="js-lesson-heading">
 							01. Launch Your First JavaScript Mission
 						</h2>
+
+						{/* Debug Info - Remove in production */}
+						{/* {!inventoryLoading && (
+							<div
+								style={{
+									fontSize: "12px",
+									color: "#00ff00",
+									background: "rgba(0,255,0,0.1)",
+									padding: "8px",
+									borderRadius: "4px",
+									marginBottom: "10px",
+								}}
+							>
+								🐛 Debug: Total Hints = {totalHints} (3 default
+								+ {totalHints - 3} purchased)
+								<button
+									onClick={fetchUserInventory}
+									style={{
+										marginLeft: "10px",
+										padding: "2px 8px",
+										fontSize: "10px",
+										background: "#00ff00",
+										color: "#000",
+										border: "none",
+										borderRadius: "3px",
+										cursor: "pointer",
+									}}
+								>
+									🔄 Refresh Hints
+								</button>
+							</div>
+						)} */}
+
+						{inventoryLoading && (
+							<div
+								style={{
+									fontSize: "12px",
+									color: "#ffff00",
+									background: "rgba(255,255,0,0.1)",
+									padding: "8px",
+									borderRadius: "4px",
+									marginBottom: "10px",
+								}}
+							>
+								⏳ Loading hint inventory...
+							</div>
+						)}
+
 						<h3 className="js-lesson-sub-headings">Introduction</h3>
 						<p className="js-introduction">
 							Think of JavaScript as the control panel of your
@@ -364,12 +497,17 @@ function JSLesson1() {
 							mission? Click the Begin Mission button to launch
 							your JavaScript adventure!
 						</p>
-						{!startAttempt && (
+						{!startAttempt && !inventoryLoading && (
 							<button
 								className="js-attempt-btn"
 								onClick={() => beginChallenge()}
 							>
 								Begin Mission
+							</button>
+						)}
+						{inventoryLoading && (
+							<button className="js-attempt-btn" disabled>
+								Loading Mission... ⏳
 							</button>
 						)}
 						{startAttempt && (
@@ -378,6 +516,7 @@ function JSLesson1() {
 								<button
 									className="js-hint-btn"
 									onClick={useHintSystem}
+									disabled={hintCounter <= 0}
 								>
 									Request Hint ({hintCounter})
 								</button>

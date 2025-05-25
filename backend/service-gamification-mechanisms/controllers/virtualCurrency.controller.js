@@ -1,5 +1,6 @@
 const UserWallet = require("../models/virtualCurrency.model");
 const UserExperience = require("../models/userExperience.model");
+const UserInventory = require("../models/userInventory.model");
 
 // Conversion rates
 const CONVERSION_RATES = [
@@ -8,6 +9,18 @@ const CONVERSION_RATES = [
 	{ xp: 1000, coins: 20, name: "Premium" },
 	{ xp: 5000, coins: 120, name: "Ultimate" },
 ];
+
+// Store items configuration
+const STORE_ITEMS = {
+	"5_lesson_hints": {
+		name: "5 Lesson Hints",
+		price: 2,
+		description: "Get 5 extra hints for JavaScript lessons",
+		type: "hints",
+		value: 5,
+	},
+	// Future items can be added here
+};
 
 // Get conversion rates
 const getConversionRates = async (req, res) => {
@@ -62,29 +75,145 @@ const getUserWallet = async (req, res) => {
 	}
 };
 
+// Get user inventory
+const getUserInventory = async (req, res) => {
+	const { userId } = req.params;
+
+	if (!userId) {
+		return res
+			.status(400)
+			.json({ success: false, error: "User ID is required" });
+	}
+
+	try {
+		let inventory = await UserInventory.findOne({ userId });
+
+		if (!inventory) {
+			inventory = new UserInventory({
+				userId,
+				jsLessonHints: 0,
+			});
+			await inventory.save();
+		}
+
+		return res.status(200).json({
+			success: true,
+			inventory,
+		});
+	} catch (error) {
+		console.error("Error fetching user inventory:", error);
+		return res
+			.status(500)
+			.json({ success: false, error: "Internal server error." });
+	}
+};
+
+// Purchase item from store
+const purchaseItem = async (req, res) => {
+	const { userId, itemId } = req.body;
+
+	if (!userId || !itemId) {
+		return res.status(400).json({
+			success: false,
+			error: "User ID and item ID are required",
+		});
+	}
+
+	// Check if item exists
+	const item = STORE_ITEMS[itemId];
+	if (!item) {
+		return res.status(400).json({
+			success: false,
+			error: "Invalid item ID",
+		});
+	}
+
+	try {
+		// Get user wallet
+		let wallet = await UserWallet.findOne({ userId });
+		if (!wallet) {
+			return res.status(404).json({
+				success: false,
+				error: "User wallet not found",
+			});
+		}
+
+		// Check if user has enough coins
+		if (wallet.coinBalance < item.price) {
+			return res.status(400).json({
+				success: false,
+				error: "Insufficient coin balance",
+			});
+		}
+
+		// Get user inventory
+		let inventory = await UserInventory.findOne({ userId });
+		if (!inventory) {
+			inventory = new UserInventory({
+				userId,
+				jsLessonHints: 0,
+			});
+		}
+
+		// Process purchase based on item type
+		if (item.type === "hints") {
+			inventory.jsLessonHints += item.value;
+		}
+
+		// Deduct coins from wallet
+		wallet.coinBalance -= item.price;
+
+		// Add transaction record
+		wallet.transactions.push({
+			type: "PURCHASE",
+			coinAmount: -item.price,
+			description: `Purchased ${item.name}`,
+			timestamp: new Date(),
+		});
+
+		// Save both wallet and inventory
+		await wallet.save();
+		await inventory.save();
+
+		return res.status(200).json({
+			success: true,
+			message: `${item.name} purchased successfully!`,
+			purchase: {
+				item: item.name,
+				price: item.price,
+				value: item.value,
+			},
+			wallet,
+			inventory,
+		});
+	} catch (error) {
+		console.error("Error purchasing item:", error);
+		return res.status(500).json({
+			success: false,
+			error: "Internal server error",
+		});
+	}
+};
+
 // Convert XP to coins
 const convertXpToCoins = async (req, res) => {
 	const { userId, xpAmount } = req.body;
 
 	if (!userId || !xpAmount) {
-		return res
-			.status(400)
-			.json({
-				success: false,
-				error: "User ID and XP amount are required",
-			});
+		return res.status(400).json({
+			success: false,
+			error: "User ID and XP amount are required",
+		});
 	}
 
 	try {
 		// Get user experience
 		const userExperience = await UserExperience.findOne({ userId });
 		if (!userExperience) {
-			return res
-				.status(404)
-				.json({
-					success: false,
-					error: "User experience record not found",
-				});
+			return res.status(404).json({
+				success: false,
+				error: "User experience record not found",
+			});
 		}
 
 		// Check if user has enough XP
@@ -202,6 +331,8 @@ const updateCurrency = async (req, res) => {
 
 module.exports = {
 	getUserWallet,
+	getUserInventory,
+	purchaseItem,
 	convertXpToCoins,
 	getConversionRates,
 	updateCurrency,

@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import SpaceBackground from "../../../images/js-lessons/space-station-bg.png";
-import AstronautGuide from "../../../images/js-lessons/js-motive-image.png";
+import AstronautGuide from "../../../images/js-lessons/js-upcoming-image.PNG";
 import "./js-lesson2.styles.css";
 
 function JSLesson2() {
@@ -66,7 +66,7 @@ function JSLesson2() {
 									className="js2-back-btn"
 									onClick={goBackToMissions}
 								>
-									🚀 Return to Mission Control
+									Return to Mission Control
 								</button>
 							</div>
 
