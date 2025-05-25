@@ -33,9 +33,9 @@ const getUserById = async (req, res) => {
 	}
 };
 
-module.exports = { getUserById };
-const studentModel = require("../models/student.model");
-const adminModel = require("../models/admin.model");
+//module.exports = { getUserById };
+// const studentModel = require("../models/student.model");
+// const adminModel = require("../models/admin.model");
 
 
 // Get user by email
@@ -111,4 +111,4 @@ const addCollaboratedSnippet = async (req, res) => {
     }
   };
 
-module.exports = { getUserByEmail, addCollaboratedSnippet, getCollaboratedSnippets };
+module.exports = { getUserByEmail, addCollaboratedSnippet, getCollaboratedSnippets, getUserById };

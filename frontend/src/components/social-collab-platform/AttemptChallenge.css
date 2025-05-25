@@ -471,7 +471,7 @@
   font-weight: bold;
 }
 
-.js-editor-container .editor-header h3::before {
+.js-editor-container2 .editor-header h3::before {
   content: "JS";
   color: #f1fa8c;
   margin-right: 8px;
