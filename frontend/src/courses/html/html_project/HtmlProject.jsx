@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useCodeMirror } from "@uiw/react-codemirror";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { html } from "@codemirror/lang-html";
+import { MdError } from "react-icons/md";
 import GalacticBackground from "../../../images/lessons/planet-exterior.jpg";
 import TabletScreen from "../../../images/lessons/tab-screen.png";
 import MiniProjectOutput from "../../../images/lessons/mini-project-target-output.png";
@@ -605,7 +606,8 @@ function HtmlProject() {
           style={{ backgroundImage: `url(${GalacticBackground})` }}
         >
           <div className="global-error-marker">
-            Major syntax issue found! Please check your code!
+            <MdError style={{ color: "red", marginRight: "12px" }} /> Major
+            syntax issue found! Please check your code!
           </div>
 
           <div className="space-center-area">
