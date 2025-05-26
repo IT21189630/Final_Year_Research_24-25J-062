@@ -73,6 +73,8 @@ function VirtualLab() {
 const [testHtml, setTestHtml] = useState('<div><img src="x.png"></div>');
 const [testCss, setTestCss] = useState('body { color: red }');
 
+const [loadingRecommendation, setLoadingRecommendation] = useState(false);
+
 useEffect(() => {
   const savedSnippetId = localStorage.getItem('currentSnippetId');
   if (savedSnippetId) {
@@ -93,6 +95,11 @@ useEffect(() => {
   const editorOptions = {
     selectOnLineNumbers: true,
     minimap: { enabled: false },
+    fontSize: 18,              // Change editor font size here
+    lineNumbersMinChars: 4,
+    scrollbar: {
+    horizontal: 'hidden'
+  },
   };
 
   const user = useSelector((state) => state.user);
@@ -648,14 +655,14 @@ const [expandedStates, setExpandedStates] = useState({
 });
 
 const [editorHeights, setEditorHeights] = useState({
-  html: 180,
-  css: 180,
-  js: 180
+  html: 500,
+  css: 500,
+  js: 500
 });
 
 // Add this effect to calculate heights
 useEffect(() => {
-  const totalHeight = 540; // Total height for all editors
+  const totalHeight = 940; // Total height for all editors
   const expandedCount = Object.values(expandedStates).filter(Boolean).length;
   const baseHeight = expandedCount > 0 ? totalHeight / expandedCount : 0;
 
@@ -724,6 +731,15 @@ useEffect(() => {
 //   }
 // };
 
+const LoadingPopup = () => (
+    <div className="recommendation-loading-overlay">
+      <div className="recommendation-loading-popup">
+        <div className="spinner"></div>
+        <div className="loading-text">Generating recommendations...</div>
+      </div>
+    </div>
+  );
+
 const getPredictedErrors = async () => {
   if (errorTypes.length === 0) {
     console.error("Error Types array is empty. Cannot send prediction request.");
@@ -735,6 +751,8 @@ const getPredictedErrors = async () => {
   "Missing semicolon.",
   "Expected '{' and instead saw 'expression'."
 ];
+
+setLoadingRecommendation(true);
 
   try {
     // Step 1: Send errorTypes to the /predict endpoint
@@ -763,6 +781,7 @@ const getPredictedErrors = async () => {
 // "event: complete\ndata: [{...}]"
 const rawResponse = pollResponse.data;
 console.log("Raw Response:", rawResponse);
+setLoadingRecommendation(false);
 
 // Extract the 'data: ...' line using regex or string split
 const dataLine = rawResponse.split("\n").find(line => line.startsWith("data:"));
@@ -809,7 +828,9 @@ if (dataLine) {
     }
   } catch (error) {
     console.error("Error during prediction or recommendation:", error.response?.data || error.message);
-  }
+  }finally {
+      setLoadingRecommendation(false);
+    }
 };
 
 
@@ -875,7 +896,7 @@ console.log("All Strings:", errorTypes.every((item) => typeof item === "string")
                 onClick={() => setShowSearchPopup(true)}
                 style={{ cursor: 'pointer' }}
               >
-                <MdSearch size={22} />
+                <MdSearch size={28} />
               </span>
             )}
             {showSearchPopup && (
@@ -1011,7 +1032,7 @@ console.log("All Strings:", errorTypes.every((item) => typeof item === "string")
               title="Live Output"
               srcDoc={generateOutput()}
               width="100%"
-              height="480px"
+              height="840px"
             ></iframe>
           </div>
 
@@ -1241,6 +1262,8 @@ console.log("All Strings:", errorTypes.every((item) => typeof item === "string")
           </div>
         </div>
       )}
+
+      
     </div>
     
   );

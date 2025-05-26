@@ -14,14 +14,14 @@ const CollapsibleEditor = ({
     height
   }) => {
     return (
-      <div className="editor-container" style={{ height: `${height}px` }}>
+      <div className="editor-container" style={{ height: `${height}px`,width: "520px" }}>
         <div className="editor-title">
           <span>{title}</span>
           <button onClick={onToggle}>
             {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
           </button>
         </div>
-        <div className="editor-content" style={{ height: `calc(${height}px - 40px)` }}>
+        <div className="editor-content" style={{ height: `calc(${height}px - 40px)`, width: "520px"}}>
           <MonacoEditor
             height="100%"
             width="100%"
