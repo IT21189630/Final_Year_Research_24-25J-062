@@ -11,6 +11,7 @@
 .js-milestone-container:hover {
 	transform: translateY(-5px);
 	box-shadow: 0 10px 20px rgba(243, 156, 18, 0.3);
+	z-index: 1001;
 }
 
 /* Completed lesson styling */
@@ -20,6 +21,7 @@
 
 .js-milestone-container.completed:hover {
 	box-shadow: 0 10px 20px rgba(39, 174, 96, 0.3);
+	z-index: 1001;
 }
 
 .js-level-navigator {
@@ -133,7 +135,7 @@
 	opacity: 0;
 	visibility: hidden;
 	transition: all 0.3s ease;
-	z-index: 10;
+	z-index: 1000;
 }
 
 .js-lesson-info::before {
